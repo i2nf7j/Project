@@ -1,0 +1,129 @@
+# 기술 검토 및 구현 구조 제안
+
+검토일: 2026-09-09  
+역할 기준: [Developer](Developer.md) / 최종 정리: Planner  
+근거: [PROPOSAL.md](../../PROPOSAL.md), [product.md](../product.md), [UX 명세](../design/ux-spec.md)  
+조율 결과: [design-development-review.md](../design-development-review.md)
+
+## 1. 결론과 검증 수준
+
+지정 스택을 유지한 웹 시연 구조는 설계할 수 있다. 다만 Spring Boot 2.7.18과 Kotlin 2.0.21의 전체 조합을 이 저장소에서 빌드·실행한 결과는 없다. Java·Gradle 지원 범위의 교집합은 있지만 Kotlin 관련 의존성, JSON 처리, 프록시, DB 및 WAR 실행은 실제 검증이 필요하다.
+
+이번 작업은 읽기 전용 환경 조사와 공식 문서 기반 검토다. 패키지 설치, 제품 코드·빌드 파일 생성, DB 연결, 서버 실행, 배포는 수행하지 않았다. Developer 에이전트 위임이 실행 대기 상태에 머물러 Planner가 Developer 역할 지침에 따라 검토를 이어받아 작성했다.
+
+## 2. 실제 로컬 확인
+
+| 확인 방법 | 결과 | 해석 |
+|---|---|---|
+| 파일 목록·src 재귀 조회 | src 내부 파일 없음; package.json, Gradle 설정·Wrapper 없음 | 제품 코드와 빌드 설정 미구성 |
+| Get-Command java, javac, gradle | 현재 PATH에서 찾지 못함 | 이 프로세스에서 실행 불가; PC 전체 미설치를 단정하지 않음 |
+| node --version | v24.19.0, 종료 코드 0 | Node 실행 확인 |
+| npm.cmd --version | 11.17.0, 종료 코드 0 | npm 실행 확인; pnpm 확인을 대신하지 않음 |
+| Get-Command pnpm, mysql, git | 현재 PATH에서 찾지 못함 | pnpm·MySQL CLI·Git 실행 경로 미확인 |
+
+MySQL CLI가 보이지 않는다는 사실로 DB 서버 부재를 단정하지 않는다. DB 서비스·포트·인증과 Tomcat 설치는 확인하지 않았다. 환경변수·인증정보를 덤프하거나 설치 상태를 변경하지 않았다.
+
+## 3. 지정 스택 호환성
+
+### 3.1. Spring Boot·Java·Gradle·Kotlin
+
+Spring Boot 2.7.18 문서의 Java 지원은 8~21이며 Java 17은 범위 안이다. 지원 Gradle 계열은 6.8.x·6.9.x·7.x·8.x다. [Boot 2.7.18 시스템 요구사항](https://docs.spring.io/spring-boot/docs/2.7.18/reference/html/getting-started.html#getting-started.system-requirements)
+
+Kotlin Gradle Plugin 2.0.20~2.0.21의 표기 지원 범위는 Gradle 6.8.3~8.8이며 8.6까지의 완전 호환 설명이 있다. Java 17에서 Gradle을 실행하려면 7.3 이상이어야 한다. 따라서 **Gradle 8.6을 첫 검증 후보**로 제안한다. 이는 지원 범위 교집합에 따른 추론이며 프로젝트 빌드 통과 선언이 아니다. Gradle 내장 Kotlin DSL 버전과 애플리케이션 Kotlin 플러그인 버전을 혼동하지 않는다. [Kotlin Gradle 호환성](https://kotlinlang.org/docs/gradle-configure-project.html), [Gradle Java 호환성](https://docs.gradle.org/current/userguide/compatibility.html)
+
+Boot 2.7.18의 기본 관리 Kotlin은 1.6.21로 지정 Kotlin 2.0.21과 다르다. Boot 문서는 Gradle 사용 시 Kotlin 플러그인 버전과 kotlin.version을 맞추는 동작을 설명한다. 플러그인 버전만 보고 성공을 가정하지 말고 실제 의존성 트리의 stdlib·reflect·test와 kotlin-spring 등의 버전을 확인해야 한다. Kotlin 클래스의 프록시와 Jackson Kotlin 모듈도 검증 대상이다. [기본 의존성 버전](https://docs.spring.io/spring-boot/docs/2.7.18/reference/html/dependency-versions.html), [Boot Kotlin 지원](https://docs.spring.io/spring-boot/docs/2.7.18/reference/htmlsingle/#features.kotlin)
+
+구현 준비 시 Java toolchain과 Kotlin JVM target은 17로 맞춘다. Kotlin 2.0.21은 그대로 유지하고 JSON null/default 값 처리, Spring 서비스 프록시, 선택한 ORM의 엔티티 생성을 검증한다. 충돌이 실제로 확인되면 실패 근거와 변경 대안을 조율한다. 문헌만으로 조합 전체의 호환·비호환을 단정하지 않는다.
+
+Boot 2.7.18은 Spring Boot 2.x의 OSS 지원 종료 릴리스다. 지정 버전은 유지하되 향후 실제 운영 전 유지보수 계획을 별도 검토한다. 이번 시연 요구를 임의로 Boot 3 이상으로 변경하지 않는다. [공식 릴리스 안내](https://spring.io/blog/2023/11/23/spring-boot-2-7-18-available-now/)
+
+### 3.2. WAR·Servlet 실행 환경
+
+Boot 2.7의 Servlet 3.1/4.0 범위에 맞춰 Tomcat 9 계열을 검증 대상으로 제안한다. Tomcat 10은 javax에서 jakarta 패키지로 변경되었으므로 같은 WAR를 그대로 올릴 대상으로 간주하지 않는다. [Boot 컨테이너 지원](https://docs.spring.io/spring-boot/docs/2.7.18/reference/html/getting-started.html), [Tomcat 10 마이그레이션](https://tomcat.apache.org/migration-10.html)
+
+WAR 패키징, SpringBootServletInitializer 및 외부 컨테이너용 의존성 구성을 적용하는 방식이다. 실행형 WAR로 로컬 시연하고 외부 Tomcat 배포를 추가 검증하는 안을 제안한다. 어느 방식이든 Java 17에서 실제 기동해야 검증 완료다. SPA 정적 파일 경로·새로고침 fallback·컨텍스트 경로와 API/SSE 주소도 함께 확인한다. [Boot 전통적 배포 가이드](https://docs.spring.io/spring-boot/docs/2.7.18/reference/html/howto.html#howto.traditional-deployment)
+
+### 3.3. React 19·TypeScript strict·Vite·pnpm
+
+React 공식 문서는 Vite를 사용하는 직접 구성 방식을 안내한다. React 19·react-dom·React 타입의 주 버전을 맞추고 TypeScript strict를 켠 SPA로 설계한다. React 서버 컴포넌트나 별도 SSR 프레임워크는 이번 범위에 필요하지 않다. [React 직접 구성](https://react.dev/learn/build-a-react-app-from-scratch), [React 19 전환 안내](https://react.dev/blog/2024/04/25/react-19-upgrade-guide)
+
+현재 Vite 안내의 Node 요구는 20.19+ 또는 22.12+이며 확인한 Node 24.19.0은 그 숫자상 기준을 충족한다. 다만 선택 템플릿·플러그인·pnpm과 실제 빌드는 확인하지 않았다. Vite·TypeScript·pnpm 세부 버전은 구현 계획에서 고정하고 lockfile로 재현한다. pnpm은 현재 PATH에 없으므로 별도의 준비가 필요하다. [Vite 환경 요구](https://vite.dev/guide/), [pnpm 설치·호환성 안내](https://pnpm.io/installation)
+
+Vite 변환 성공과 TypeScript 타입 검사 성공을 구분하여 향후 타입 검사와 production build를 각각 수행한다. 현재 버전 명세가 없는 UI·캘린더·차트 패키지는 호환성을 확인하기 전에 확정하지 않는다.
+
+### 3.4. MySQL 8.0
+
+MySQL 서버는 지정한 8.0을 유지한다. 드라이버는 예를 들어 Connector/J 8.0.33을 검증 후보로 둘 수 있으며 공식 릴리스 문서는 MySQL 8.0과의 사용을 설명한다. 최신 Connector/J 문서는 다른 서버 최소 버전을 요구할 수 있어 무조건 최신 버전을 선택하지 않는다. [Connector/J 8.0.33 릴리스](https://dev.mysql.com/doc/relnotes/connector-j/en/news-8-0-33.html), [공식 Connector/J 릴리스 노트](https://downloads.mysql.com/docs/connector-j-relnotes-en.pdf)
+
+실제 연결·드라이버 해석 결과, 한글·utf8mb4, 날짜·시간대, 고유키·트랜잭션을 확인해야 한다. 서버·드라이버 패치 버전 및 마이그레이션 도구는 다음 단계에서 고정한다. 이번 작업에서 DB 접속을 시도하거나 스키마를 만들지 않았다.
+
+## 4. 시스템 구조 제안
+
+```text
+브라우저 React SPA
+  HTTP 요청: 조회·입력·업로드·작업 처리
+  SSE 수신: 변경 알림 후 권한 범위 재조회
+       |
+Spring Boot MVC / 인증·권한 / 업무 서비스
+  접수·배정 / 작업·공조 / 병력·근무 / 집계·보고
+       |
+MySQL 8.0
+```
+
+배포 시 SPA와 API를 같은 origin에서 제공하고 세션 쿠키 인증을 사용하는 단일 서버 구조를 제안한다. 변경 요청은 CSRF 보호를 적용하고 서버가 역할·소속·다부대 조회 권한을 검사한다. 개발 중 Vite proxy를 사용하는 경우 쿠키·API/SSE 경로를 같은 정책으로 맞춘다. 인증 방식의 상세 계약은 다음 단계 산출물이며 아직 코드 설정이 아니다.
+
+서버에서 브라우저로 보내는 변경 알림에는 Spring MVC SseEmitter를 제안한다. 해당 API는 Spring Framework 5.3.31에 존재한다. 변경 저장이 성공한 후 갱신 신호를 전달하고 재연결 시 전체 최신 데이터를 다시 조회한다. 연결 해제·로그아웃·권한 변경 시 구독을 정리한다. 이벤트에는 허용된 범위만 담고 heartbeat·timeout·프록시 buffering은 실행 환경에서 확인한다. [SseEmitter API](https://docs.spring.io/spring-framework/docs/5.3.31/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/SseEmitter.html)
+
+대규모 메시지 브로커·마이크로서비스는 현재 시연 범위에서 도입하지 않는다. 세션 만료 시 이전 계정의 화면 데이터를 지우고, 편집 중 새 변경을 받으면 초안을 보존하여 버전 충돌을 표시한다. DB의 업무 기록·알림함과 일시적 SSE 연결을 구분한다.
+
+## 5. 최신 메뉴와 업무의 데이터 경계
+
+| 메뉴 | 책임 | 데이터·권한 기준 |
+|---|---|---|
+| 대시보드 | 역할별 요약과 상세 이동 | BNOC 부대 전체/정비부서 자기 부서 기본 제안, 집계 필터 공유 |
+| 정보통신 운영 | 운영현황, CPCON·GPS 상황 | 부대별 항목·값·적용 시각, 운영정보 조회 권한 별도 |
+| 부대운영 | 병력 현황, 근무자(야간), 지시사항 | 인원 명단·일일 상태·야간 근무·게시물 분리 |
+| 정비 요청 | 일반 사용자 입력·본인 조회 | 요청 ID, 희망 부서는 선택사항 |
+| 정비 접수 | BNOC 최초 접수·부서 배정·종결 | 역할 검사, 요청과 부서 작업 연결 |
+| 정비 진행 | 부서 작업 확인·진행·완료·공조·일정 | 목록·캘린더가 같은 작업 ID 사용, 확인 여부는 상태와 별도 |
+| 정비 현황 | 월간·날짜별 집계와 16시 보고 | 요청 ID·작업 ID·수동 건수 출처 구분 |
+
+정비사의 최초 요청 승인 단계는 제거한다. BNOC 배정 후 정비부서가 작업을 확인한다. 공조만 수신 정비반이 직접 수락하며 수락과 협조 작업 생성을 일관되게 처리한다. 공조 요청 ID의 고유 연결과 조건부 상태 갱신으로 재시도·동시 수락 중복을 방지하는 안을 제안한다. 실제 SQL·잠금 전략은 다음 단계에서 정한다.
+
+조치 완료는 작업 단위, BNOC 종결은 요청 단위다. 서버는 관련 작업 완료 조건을 다시 확인한다. 추가 조치·작업 재개 기능은 넣지 않는다. 미처리 공조의 종결 제한·거절·철회 권한은 아직 설계 제안이다.
+
+## 6. 업로드·통계·보고 구현 방향
+
+### 부분 업로드
+
+검증 세션에 원본 행 번호, 인원·기준일 키, 전후 값, 데이터 버전, 검증 결과를 연결한다. 적용 시 서버가 다시 권한·버전을 확인하고 정상 행부터 저장한다. 30행 중 오류 2행은 건너뛰고 정상 28행을 처리한다. 결과는 적용·변경 없음·오류·충돌·저장 실패로 반환한다.
+
+행별 독립 트랜잭션을 사용하는 방식을 제안하여 한 행의 충돌이 다른 정상 행을 취소하지 않게 한다. 요청 재전송은 처리 ID와 대상 고유키로 확인한다. 입력 파일에 빠진 인원과 오류 행의 기존 값은 보존한다. 읽을 수 없는 파일·필수 열 누락·권한 없는 대상 등은 파일 전체 오류다. 파일 크기·행수 상한과 보관 기간은 상세 설계에서 정한다.
+
+야간 근무는 관리 부대와 근무자 소속을 분리하고 기존 근무 ID로 수정한다. 신규 행 중복 판정과 파일 재업로드 키는 양식 계약에서 정한다. 이름만 같다는 이유로 다른 인원을 합치지 않는다.
+
+### 기간 집계
+
+기간 시작 미완료와 기간 중 추가 대상을 작업 ID로 중복 없이 합친다. 수동 건수는 원본 묶음과 이월 출처를 연결한다. 기간 말 상태를 재현하려면 시작·완료·취소 시각과 필요한 변경 이력을 보존한다. 오입력 정정의 과거 기간 반영 규칙은 미정이므로 조용히 확정하지 않는다.
+
+현재 작업 중·미확인·기간 완료·BNOC 종결은 서로 다른 기준이다. 상태 분포 그래프는 같은 단위의 상태만 사용한다. 수동 입력분은 상세 작업상태가 없으면 완료·미완료까지만 합산하고, 대기·작업 중·보류를 임의 추정하지 않는다. 대시보드와 정비 현황은 동일 집계 서비스를 사용한다.
+
+### 16시 보고
+
+Asia/Seoul 16:00을 기준으로 일일 대상·완료·미완료·부서·출처·기준시각을 보관한다. 부대·기준일·보고 종류의 고유키로 중복 생성을 방지하고 읽기 일관성을 확보한다. 집계 시작/종료와 저장 시각을 구분하며 기준시각 이후의 완료가 당시 기록에 섞이지 않도록 설계한다. 스케줄러 재시작 시 현재 값을 16시 값으로 소급하지 않는다. 생성 실패는 미생성으로 표시한다.
+
+## 7. 다음 단계 검증 계획 — 아직 실행하지 않음
+
+| 단계 | 검증 | 통과 근거 |
+|---|---|---|
+| 환경 준비 | Java 17·Wrapper·pnpm·MySQL 실행 및 버전 고정 | 실행 결과와 설정값 기록 |
+| 최소 백엔드 | Kotlin 컴파일, 의존성 트리, JSON null/default, 서비스 프록시 | 테스트·기동 로그와 해석된 버전 |
+| 데이터 | MySQL 연결, 마이그레이션, 부대 고유키·트랜잭션 | 실제 DB 대상 테스트 |
+| 프론트엔드 | React 타입·TypeScript strict, Vite production build | 타입 검사·빌드 통과 |
+| 패키징 | bootWar, Java 17 기동·Tomcat 9 배포 경로 검토 | WAR 응답·SPA 새로고침·API/SSE 동작 |
+| 업무 흐름 | BNOC 배정·부서 확인·공조 수락·완료·종결 | 역할별 정상/금지 동작·동시 처리 테스트 |
+| 업로드 | 28정상/2오류, 충돌, 재업로드·누락 보존 | 실제 저장 건수와 행별 응답 일치 |
+| 통계·보고 | 일간 6/3/3, 주간 12/9/3, 16시 6/10·현재8/10 | 데이터 사례와 집계·보고 값 일치 |
+| 다중 브라우저 | 갱신·편집 보존·재연결·부대 전환·세션 만료 | 두 세션에서 화면과 권한 확인 |
+
+현재는 공식 근거 검토와 로컬 도구 검색·Node/npm 버전 확인만 완료했다. 위 검증을 통과하기 전에는 빌드 준비 완료·실시간 동기화 완료·실제 배포 가능으로 보고하지 않는다.
