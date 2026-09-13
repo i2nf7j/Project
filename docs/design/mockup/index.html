@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light">
   <title>우리 부서 대시보드 · 정비상황 공유체계</title>
-  <link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+  <link rel="stylesheet" href="styles.css"><script src="app.js" defer></script><script src="equipment.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -15,13 +15,14 @@
         <h2><span data-icon="network"></span>정보통신 운영</h2><a href="#systems">운영현황</a>
         <details><summary>정보통신 상황</summary><button data-info="CPCON">CPCON</button><button data-info="GPS 전파교란 위기경보단계">GPS 전파교란 위기경보단계</button></details>
         <h2><span data-icon="people"></span>부대운영</h2><button data-info="병력 현황">병력 현황</button><a href="#duty">근무자(야간)</a><a href="#notices">지시사항</a>
-        <h2><span data-icon="tool"></span>정비관리</h2><a href="#tasks">정비 진행</a><button id="summary-open">정비 현황</button>
+        <h2><span data-icon="tool"></span>정비관리</h2><a href="#tasks">정비 진행</a><button id="summary-open">정비 현황</button><a href="#equipment" id="equipment-open">장비 운영</a>
       </nav>
       <div class="sidebar-foot"><span class="demo">시연용 가상 데이터</span><p>정비상황 공유체계의<br>화면 검토용 목업입니다.</p><a href="legacy/index.html">이전 목업 보기 ↗</a></div>
     </aside>
     <div class="workspace">
       <header class="topbar"><span><span data-icon="unit"></span> 가상대대 A</span><span>네트워크체계팀</span><a href="#alerts" aria-label="부서 알림 보기" class="bell"><span data-icon="bell"></span><i></i></a><span><span data-icon="people"></span>정비사</span><button id="tv" aria-pressed="false">전시기 모드</button></header>
       <main id="main" tabindex="-1">
+        <div id="dashboard-view">
         <div class="heading"><div><h1>우리 부서 대시보드</h1><p>네트워크체계팀 · 2026.09.09 수요일 · 자료 기준 09:30</p></div><div class="situations"><button data-info="CPCON"><span data-icon="shield"></span><span><small>CPCON</small><strong>시연 단계</strong></span></button><button data-info="GPS 전파교란 위기경보단계"><span data-icon="signal"></span><span><small>GPS</small><strong class="green">정상 (예시)</strong></span></button></div></div>
         <section class="metrics" aria-label="우리 부서 작업 요약" id="metrics"></section>
         <div class="content-grid">
@@ -32,7 +33,21 @@
           <section class="card duty" id="duty"><div class="card-heading"><h2>근무자(야간)</h2><span class="today">오늘</span></div><div class="table-scroll"><table><thead><tr><th>직책</th><th>근무자</th><th>연락처</th></tr></thead><tbody><tr><td>통신일직</td><td>중사 가상A</td><td>DEMO-1001</td></tr><tr><td>작통일직</td><td>대위 가상B</td><td>DEMO-1002</td></tr><tr><td>생활관 근무</td><td>하사 가상C</td><td>DEMO-1003</td></tr></tbody></table></div><p class="footnote">가상대대 A · 09.09 18:00 ~ 09.10 09:00</p></section>
           <section class="card notices" id="notices"><div class="card-heading"><h2>지시사항</h2></div><button data-notice="일일 현황 16시 확인"><strong>일일 현황 16시 확인</strong><small>2026.09.09</small><p>진행·보류 사유를 최신화해주세요.</p></button><button data-notice="정비 일정 최신화"><strong>정비 일정 최신화</strong><small>2026.09.09</small><p>변경된 방문 일정을 반영해주세요.</p></button></section>
         </div>
-        <footer>로컬 시연 · 변경사항은 새로고침하면 초기화됩니다.<a href="reference-technician.png">기준 이미지 보기 ↗</a></footer>
+        </div>
+        <section id="equipment" hidden aria-labelledby="equipment-title">
+          <div class="heading"><div><h1 id="equipment-title" tabindex="-1">장비 운영</h1><p>정비관리 · 부서별 장비 및 정보보호 프로그램 관리</p></div><span class="demo">정비사 · 가상대대 A</span></div>
+          <section class="card">
+            <div class="tabs" role="tablist" aria-label="장비 운영 분류"><button id="inventory-tab" role="tab" aria-selected="true" aria-controls="equipment-panel" data-equipment-tab="inventory">장비 목록</button><button id="security-tab" role="tab" aria-selected="false" tabindex="-1" aria-controls="equipment-panel" data-equipment-tab="security">정보보호 프로그램</button></div>
+            <div class="equipment-toolbar">
+              <label>부서<select id="equipment-department"><option value="">전체 부서</option><option>네트워크체계팀</option><option>가상지원반</option><option>가상정비반</option></select></label>
+              <label>망 종류<select id="equipment-network"><option value="">전체 망</option><option>국방망</option><option>전장망</option><option>센서망</option><option>LTE망</option><option>VoIP망</option><option>기타</option></select></label>
+              <label class="equipment-search">장비 검색<input id="equipment-search" type="search" placeholder="장비명 또는 사업명"></label>
+              <button id="equipment-add" class="primary">+ 장비 등록</button>
+            </div>
+            <div id="equipment-panel" role="tabpanel" aria-labelledby="inventory-tab" tabindex="0"><p id="equipment-count" class="equipment-count" role="status"></p><div class="table-scroll"><table class="equipment-table"><thead id="equipment-columns"></thead><tbody id="equipment-rows"></tbody></table></div></div>
+          </section>
+        </section>
+        <footer>로컬 시연 · 변경사항과 첨부파일은 새로고침하면 초기화됩니다.<a href="reference-technician.png">기준 이미지 보기 ↗</a></footer>
       </main>
     </div>
   </div>
