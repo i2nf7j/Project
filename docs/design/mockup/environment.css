@@ -1,0 +1,9 @@
+.environment-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.environment-card{display:flex;flex-direction:column;gap:7px;min-width:0;padding:17px 19px;background:white;border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere}
+.environment-card strong{font-size:21px;line-height:1.4}
+.environment-card>span{font-size:13px}
+.environment-card small{font-size:12px;color:var(--muted);line-height:1.5}
+.environment-card a{color:var(--blue);text-decoration:underline}
+.environment-card button{align-self:flex-start;margin-top:auto;font-size:12px;padding:5px 9px}
+.environment-card button:disabled{cursor:wait;opacity:.6}
+@media(max-width:620px){.environment-cards{grid-template-columns:1fr}.environment-card strong{font-size:18px}}
