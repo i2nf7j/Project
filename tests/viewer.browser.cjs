@@ -1,0 +1,36 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+(async()=>{
+  const browser=await chromium.launch({headless:true});
+  try{
+    const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.route('https://api.open-meteo.com/**',r=>r.fulfill({json:{current:{time:Date.now()/1000,temperature_2m:20,weather_code:0}}}));
+    await page.goto(pathToFileURL(path.resolve('docs/design/mockup.html')).href+'?role=viewer');
+    assert.equal(await page.locator('#title').textContent(),'비행단 종합 현황');
+    assert.equal(await page.locator('.viewer-comparison tbody tr').count(),3);
+    assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'');
+    assert.equal(await page.locator('.rail').isVisible(),false);
+    for(const menu of ['requests','reception','progress','cpcon','personnel'])assert.equal(await page.locator(`nav [data-page=${menu}]`).isVisible(),false);
+    await page.screenshot({path:'docs/design/mockup/preview-viewer.png',fullPage:true});
+    await page.locator('[data-viewer-wing="17"]').click();
+    assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'17');
+    assert.equal(await page.locator('.viewer-detail tbody tr').count(),4);
+    assert.equal(await page.locator('.viewer-detail .opsrow').count(),4);
+    assert.equal(await page.locator('[data-task],[data-request],#cpcon-form').count(),0);
+    await page.locator('#viewer-filter [name=wing]').selectOption('a');await page.locator('#viewer-filter button').click();
+    assert.match(await page.locator('.viewer-detail').textContent(),/가상 회선 장애/);
+    await page.locator('nav [data-page=statistics]').click();assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'a');
+    await page.locator('#viewer-filter [name=start]').fill('2026-01-01');await page.locator('#viewer-filter [name=end]').fill('2026-01-31');await page.locator('#viewer-filter button').click();
+    assert.deepEqual(await page.locator('#content .stats strong').allTextContents(),['0','0','0','—']);
+    await page.locator('nav [data-page=operations]').click();assert.match(await page.locator('#content').textContent(),/가상 회선 장애/);
+    await page.locator('#viewer-filter [name=start]').fill('2026-02-01');await page.locator('#viewer-filter button').click();assert.match(await page.locator('#viewer-filter .error').textContent(),/시작일/);
+    await page.locator('#demo-role').selectOption('network');assert.equal(await page.locator('#viewer-filter').count(),0);assert.equal(await page.locator('.rail').isVisible(),true);
+    await page.locator('#demo-role').selectOption('viewer');assert.equal(await page.locator('#title').textContent(),'비행단 종합 현황');assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'');
+    await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    await page.locator('[data-viewer-wing="17"]').click();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    assert.deepEqual(errors,[]);console.log('PASS: 상위 조회자 전체 비교·비행단 상세·기간 집계·읽기 전용·역할 복귀·모바일');
+  }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

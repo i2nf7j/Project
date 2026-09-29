@@ -18,3 +18,9 @@ nav a[aria-current=page]:not(.nav-home){background:#e7f1ff;color:var(--blue);fon
 .equipment-form{display:grid;gap:15px}.equipment-form textarea{min-height:80px;resize:vertical}.equipment-form .file-remove{flex-direction:row;align-items:center}.equipment-actions{display:flex;justify-content:flex-end;gap:8px}#dialog-body .equipment-actions .primary{margin-top:0}#dialog-body #equipment-error:empty{display:none}
 @media(max-width:620px){.equipment-toolbar label{width:100%}.equipment-toolbar>.primary{width:100%}.equipment-table{font-size:12px}}
 .document-fieldset{display:grid;gap:14px;border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}.document-fieldset legend{font-weight:700;padding:0 6px}.document-targets{display:grid;gap:12px;max-height:180px;overflow:auto;padding:8px;background:#f5f9ff}.equipment-form .file-remove{font-weight:400;overflow-wrap:anywhere}.file-remove input{flex-shrink:0}.document-link{display:block;margin-bottom:8px}.document-link small{display:block}
+
+/* 기존 정비사 목업에서 계정별 통합 화면으로 이동 */
+.account-switch{display:flex;align-items:center;gap:6px;font-size:12px;flex-wrap:wrap}.account-switch select{font:inherit;padding:6px;border:1px solid var(--line);border-radius:5px;background:white;color:inherit;max-width:190px}.topbar:has(.account-switch){height:auto;min-height:60px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.shell>.sidebar,.shell>.workspace{min-width:0}
+.table-scroll{position:relative}
+@media(max-width:900px){.shell{grid-template-columns:minmax(0,1fr)}}

@@ -14,18 +14,18 @@
       <nav aria-label="주 메뉴">
         <a class="nav-home active" href="#main" aria-current="page"><span data-icon="home"></span>대시보드</a>
         <h2><span data-icon="network"></span>정보통신 운영</h2><a href="#systems">운영현황</a>
-        <details><summary>정보통신 상황</summary><button data-info="CPCON">CPCON</button><button data-info="GPS 전파교란 위기경보단계">GPS 전파교란 위기경보단계</button></details>
+        <details><summary>정보통신 상황</summary><button data-info="CPCON">CPCON</button><button data-info="GPS 전파교란 대응체계">GPS 전파교란 대응체계</button></details>
         <h2><span data-icon="people"></span>부대운영</h2><button data-info="병력 현황">병력 현황</button><a href="#duty">근무자(야간)</a><a href="#notices">지시사항</a>
         <h2><span data-icon="tool"></span>정비관리</h2><a href="#tasks">정비 진행</a><button id="summary-open">정비 현황</button><a href="#equipment" id="equipment-open">장비 운영</a>
       </nav>
       <div class="sidebar-foot"><span class="demo">시연용 가상 데이터</span><p>정비상황 공유체계의<br>화면 검토용 목업입니다.</p><a href="legacy/index.html">이전 목업 보기 ↗</a></div>
     </aside>
     <div class="workspace">
-      <header class="topbar"><span><span data-icon="unit"></span> 가상대대 A</span><span>네트워크체계팀</span><a href="#alerts" aria-label="부서 알림 보기" class="bell"><span data-icon="bell"></span><i></i></a><span><span data-icon="people"></span>정비사</span><button id="tv" aria-pressed="false">전시기 모드</button></header>
+      <header class="topbar"><label class="account-switch">계정별 통합 화면 <select id="account-switch" aria-label="계정별 통합 화면 선택"><option value="">계정 선택</option><option value="bnoc">BNOC</option><option value="admin">관리자</option><option value="user">일반 사용자</option><option value="network">정비사 · 네트워크</option><option value="radio">정비사 · 무선</option><option value="transmission">정비사 · 전송</option><option value="cyber">사이버(정보보호) 특기</option><option value="viewer">상위 조회자</option></select></label><span><span data-icon="unit"></span> 가상대대 A</span><span>네트워크체계팀</span><a href="#alerts" aria-label="부서 알림 보기" class="bell"><span data-icon="bell"></span><i></i></a><span><span data-icon="people"></span>정비사</span><button id="tv" aria-pressed="false">전시기 모드</button></header>
       <main id="main" tabindex="-1">
         <p style="margin-bottom:16px"><a href="../mockup.html"><strong>최신 통합 목업 열기 →</strong></a> <small>CPCON · 요청·배정·공조 · 부서·기간별 통계</small></p>
         <div id="dashboard-view">
-        <div class="heading"><div><h1>우리 부서 대시보드</h1><p>네트워크체계팀 · 2026.09.09 수요일 · 자료 기준 09:30</p></div><div class="situations"><button data-info="CPCON"><span data-icon="shield"></span><span><small>CPCON</small><strong>시연 단계</strong></span></button><button data-info="GPS 전파교란 위기경보단계"><span data-icon="signal"></span><span><small>GPS</small><strong class="green">정상 (예시)</strong></span></button></div></div>
+        <div class="heading"><div><h1>우리 부서 대시보드</h1><p>네트워크체계팀 · 2026.09.09 수요일 · 자료 기준 09:30</p></div><div class="situations"><button data-info="CPCON"><span data-icon="shield"></span><span><small>CPCON</small><strong>CPCON 상세 ↗</strong></span></button><button data-info="GPS 전파교란 대응체계"><span data-icon="signal"></span><span><small>GPS</small><strong class="green">GPS 상세 ↗</strong></span></button></div></div>
         <section class="environment-cards" aria-label="부대 지역 날씨와 현재 날짜"><div class="environment-card" data-weather-card></div><div class="environment-card" data-clock-card></div></section>
         <section class="metrics" aria-label="우리 부서 작업 요약" id="metrics"></section>
         <div class="content-grid">

@@ -65,6 +65,8 @@ let timer;
 function toast(text){$("#toast").textContent=text;$("#toast").classList.add("visible");clearTimeout(timer);timer=setTimeout(()=>$("#toast").classList.remove("visible"),4000);}
 document.addEventListener("click",event=>{
   const el=event.target.closest("button");if(!el)return;
+  if(el.dataset.info==="GPS 전파교란 대응체계"){location.href="../mockup.html?role=network&page=gps";return;}
+  if(el.dataset.info==="CPCON"){location.href="../mockup.html?role=network&page=cpcon";return;}
   if(el.dataset.filter){filter=el.dataset.filter;renderTasks();const target=[...document.querySelectorAll(el.classList.contains("metric")?"#metrics button":"#task-tabs button")].find(b=>b.dataset.filter===filter);target?.focus({preventScroll:true});}
   if(el.dataset.task)showTask(el.dataset.task);
   if(el.dataset.confirm){tasks.find(t=>t.id===el.dataset.confirm).confirmed=true;$("#detail").close();renderTasks();toast("작업 확인 완료 · 진행 시작과는 별도입니다.");}
@@ -81,6 +83,7 @@ $("#accept").onclick=()=>{
 $("#all-tasks").onclick=()=>{all=!all;filter="전체";$("#all-tasks").textContent=all?"요약보기 ›":"전체보기 ›";renderTasks();};
 $("#summary-open").onclick=()=>dialog("우리 부서 정비 현황","<p>배정 작업 "+tasks.length+"건 · 조치 완료 "+tasks.filter(t=>t.status==="조치 완료").length+"건</p><p>조치 완료 작업은 BNOC 종결 대기 상태입니다.</p><p class='footnote'>현재 상세 등록 작업만 집계합니다. 기간별 실적 및 수동 건수 입력분은 구현하지 않았습니다.</p>");
 $("#close-dialog").onclick=()=>$("#detail").close();
+$("#account-switch").onchange=event=>{if(event.target.value)location.href="../mockup.html?role="+encodeURIComponent(event.target.value);};
 $("#tv").onclick=()=>{const active=document.body.classList.toggle("tv");$("#tv").setAttribute("aria-pressed",String(active));$("#tv").textContent=active?"업무 화면으로":"전시기 모드";toast("Edge에서 F11을 누르면 전체 화면으로 볼 수 있습니다.");};
 renderTasks();renderCalendar();renderSystems();
 if(new URLSearchParams(location.search).get("display")==="tv")$("#tv").click();

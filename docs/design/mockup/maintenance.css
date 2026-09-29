@@ -9,3 +9,7 @@
 @media(max-width:1050px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar .muted{display:none}}
 @media(max-width:760px){.app{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:620px){.request-form{grid-template-columns:minmax(0,1fr)}.level-row{grid-template-columns:1fr;gap:8px}.stats.six{grid-template-columns:repeat(2,1fr)}.filter>*{max-width:100%}.topbar .tools{justify-content:flex-start}.role-control{flex-wrap:wrap}.summary{gap:10px}.cpcon-card strong{font-size:21px}.help-row{align-items:flex-start;flex-direction:column}.card{padding:16px}.role-control select{max-width:210px}.cardhead h2{font-size:17px}}
+
+/* 상위 조회자: 비행단 비교와 읽기 전용 집계 */
+.viewer-mode .layout{grid-template-columns:minmax(0,1fr)}.viewer-mode .rail,.viewer-mode .sidebar footer .muted{display:none}.viewer-comparison{min-width:800px}.viewer-comparison td{vertical-align:middle}.viewer-comparison .task-meta{max-width:360px}.viewer-detail{grid-template-columns:repeat(2,minmax(0,1fr))}.viewer-mode .stat-note{margin-top:14px;margin-bottom:0}
+@media(max-width:1000px){.viewer-detail{grid-template-columns:minmax(0,1fr)}}

@@ -9,13 +9,13 @@
     {id:'security', name:'사이버(정보보호)팀', duties:'정보보호 프로그램·보안 설정 점검 (시연 예시)', symptoms:'백신 업데이트 실패, 보안 프로그램 오류', phones:[['접수 문의','DEMO-1401']], tags:['정보보호 프로그램','보안 설정','기타']}
   ];
   const sessions = {
-    bnoc:{label:'BNOC', department:null}, admin:{label:'관리자', department:null},
-    user:{label:'일반 사용자 · 가상A', department:null},
-    network:{label:'정비사 · 네트워크', department:'network'},
-    radio:{label:'정비사 · 무선', department:'radio'},
-    transmission:{label:'정비사 · 전송', department:'transmission'},
-    cyber:{label:'사이버(정보보호) 특기', department:'security'},
-    viewer:{label:'상위 조회자', department:null}
+    bnoc:{label:'BNOC', wing:'17', department:null}, admin:{label:'관리자', wing:'17', department:null},
+    user:{label:'일반 사용자 · 가상A', wing:'17', department:null},
+    network:{label:'정비사 · 네트워크', wing:'17', department:'network'},
+    radio:{label:'정비사 · 무선', wing:'17', department:'radio'},
+    transmission:{label:'정비사 · 전송', wing:'17', department:'transmission'},
+    cyber:{label:'사이버(정보보호) 특기', wing:'17', department:'security'},
+    viewer:{label:'상위 조회자', wing:null, department:null}
   };
   const levels = [
     {value:5, roman:'V', name:'정상', english:'Normal', description:'통상적인 활동 상태'},
@@ -52,7 +52,7 @@
   }
   const canAssign = s => ['bnoc','admin'].includes(s.role);
   const canSetCpcon = s => ['admin','cyber'].includes(s.role);
-  const canReadTask = (s,t) => ['bnoc','admin','viewer'].includes(s.role) || sessions[s.role].department === t.department;
+  const canReadTask = (s,t) => ['bnoc','admin'].includes(s.role) || sessions[s.role].department === t.department;
   const canWork = (s,t) => canAssign(s) || sessions[s.role].department === t.department;
   const statusAt = (t, date) => t.history.filter(h => h.date <= date).at(-1)?.status || '작업 예정';
   const departmentAt = (t,date) => t.departments.filter(h => h.date <= date).at(-1)?.department || t.department;
