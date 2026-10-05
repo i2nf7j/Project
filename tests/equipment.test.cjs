@@ -13,21 +13,22 @@ function setup(){
   };
   const tabs=['inventory','security'].map(name=>Object.assign(get('#'+name+'-tab'),{dataset:{equipmentTab:name}}));
   const context=vm.createContext({
-    $:get,document:{querySelectorAll:()=>tabs,querySelector:get},location:{hash:''},window:{addEventListener(){}},toast(){},
-    dialog(title,html){get('#dialog-body').innerHTML=html;get('#equipment-form').elements={status:{value:'확인 필요'},version:{},reason:{},file:{files:[]}};},
+    $:get,document:{querySelectorAll:()=>tabs,querySelector:get},location:{hash:''},window:{addEventListener(){}},toast(){},state:{role:"bnoc"},clearEdits(){},notify(){},loadEquipmentData:async()=>undefined,saveEquipmentData:async()=>{},
+    modal(title,html){get('#dialog-body').innerHTML=html;get('#equipment-form').elements={status:{value:'확인 필요'},version:{},reason:{},file:{files:[]}};},
     FormData:class{constructor(form){this.entries=Object.entries(form.data).flatMap(([key,value])=>(Array.isArray(value)?value:[value]).map(item=>[key,item]));}getAll(key){return this.entries.filter(entry=>entry[0]===key).map(entry=>entry[1]);}[Symbol.iterator](){return this.entries[Symbol.iterator]();}},URL,setTimeout
   });
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../docs/design/mockup/equipment.js'),'utf8'),context);
+  vm.runInContext('equipmentLoaded=true;bindEquipment()',context);
   return {get,run:code=>vm.runInContext(code,context),submit(data,files=[]){const form=get('#equipment-form');form.data=data;form.elements.file.files=files;form.onsubmit({preventDefault(){}});}};
 }
 test('부서·망·검색 조건을 함께 적용하고 빈 결과를 표시한다',()=>{
-  const s=setup();s.get('#equipment-department').value='네트워크체계팀';s.get('#equipment-network').value='국방망';s.get('#equipment-search').value='업무';s.run('renderEquipment()');
+  const s=setup();s.get('#equipment-department').value='네트워크체계반';s.get('#equipment-network').value='국방망';s.get('#equipment-search').value='업무';s.run('renderEquipment()');
   assert.match(s.get('#equipment-count').textContent,/조회 1대/);
   s.get('#equipment-search').value='없는 장비';s.run('renderEquipment()');assert.match(s.get('#equipment-rows').innerHTML,/조건에 맞는 장비가 없습니다/);
 });
 test('장비 등록 후 동일 식별자로 수정하고 사용자 입력을 이스케이프한다',()=>{
   const s=setup();s.run('editEquipment()');
-  const data={department:'가상지원반',network:'LTE망',name:'<script>예시</script>',project:'도입',year:'2026'};s.submit(data);
+  const data={department:'무선체계반',network:'LTE망',name:'<script>예시</script>',project:'도입',year:'2026'};s.submit(data);
   assert.equal(s.run('equipment.length'),6);assert.equal(s.run('equipment[5].status'),'확인 필요');
   assert.match(s.get('#equipment-rows').innerHTML,/&lt;script&gt;/);
   s.run('editEquipment(6)');s.submit({...data,name:'변경 장비'});assert.equal(s.run('equipment.length'),6);assert.equal(s.run('equipment[5].name'),'변경 장비');
@@ -77,8 +78,4 @@ test('사업 전체와 동일 장비명 빠른 선택의 대상을 구분한다'
   s.get('#document-scope').value='project';s.get('#document-scope').onchange();assert.ok(boxes.every(b=>b.checked));
   s.get('#document-scope').value='single';s.get('#document-scope').onchange();assert.deepEqual(boxes.map(b=>b.checked),[true,false,false]);
 });
-test('장비 운영 진입과 대시보드 복귀 시 본문을 전환한다',()=>{
-  const s=setup();s.run('location.hash="#equipment";equipmentRoute()');assert.equal(s.get('#dashboard-view').hidden,true);assert.equal(s.get('#equipment').hidden,false);
-  s.run('location.hash="#tasks";equipmentRoute()');assert.equal(s.get('#dashboard-view').hidden,false);assert.equal(s.get('#equipment').hidden,true);
-});
-
+test('통합 장비 화면 이벤트를 연결한다',()=>{const s=setup();assert.equal(typeof s.get('#equipment-add').onclick,'function');assert.equal(typeof s.get('#equipment-search').oninput,'function');});

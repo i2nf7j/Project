@@ -67,12 +67,46 @@ test('기간 대상은 이월+신규 고유 작업이며 과거 완료 상태를
   assert.equal(M.summarize(s,{start:'2026-09-03',end:'2026-09-03',department:'network'}).completed,1);
 });
 
-test('기간·부서별 조회와 권한·빈 결과·기간 역전',()=>{
+test('상세를 포함한 집계는 자기 부서 권한을 유지하며 빈 결과·기간 역전을 처리한다',()=>{
   const s=M.state();s.role='network';const own=M.summarize(s,{start:'2026-09-01',end:'2026-09-16',department:'radio'});
   assert.equal(own.total,3);assert.ok(own.rows.every(t=>t.department==='network'));
   const empty=M.summarize(s,{start:'2026-01-01',end:'2026-01-31'});assert.equal(empty.total,0);
   assert.throws(()=>M.summarize(s,{start:'2026-09-16',end:'2026-09-01'}));
   s.role='user';assert.equal(M.summarize(s,{start:'2026-09-01',end:'2026-09-16'}).total,0);
+});
+
+test('부서 비교는 같은 대대 네 부서 수치만 반환하고 상세·수정 권한은 확대하지 않는다',()=>{
+  const s=M.state(),range={start:'2026-09-01',end:'2026-09-16'};
+  for(const role of ['network','radio','transmission','cyber']){
+    s.role=role;
+    const rows=M.summarizeDepartments(s,{...range,department:M.sessions[role].department});
+    assert.deepEqual(rows.map(r=>[r.department,r.total,r.completed,r.pending]),[
+      ['network',3,2,1],['radio',2,1,1],['transmission',3,1,2],['security',1,0,1]
+    ]);
+    for(const row of rows){
+      assert.deepEqual(Object.keys(row).sort(),['department','total','completed','pending','rate'].sort());
+      assert.equal(row.rate,row.completed/row.total);
+    }
+    const other=s.tasks.find(t=>t.department!==M.sessions[role].department);
+    assert.equal(M.canReadTask(s,other),false);assert.equal(M.canWork(s,other),false);
+    assert.throws(()=>M.updateTask(s,other.id,{tag:other.tag,status:'작업 중',note:'forbidden'}));
+  }
+  for(const role of ['user','viewer','unknown']){s.role=role;assert.throws(()=>M.summarizeDepartments(s,range));}
+});
+
+test('부서 비교는 기간 말 재배정·취소 제외·0건을 반영하고 전체 합계와 일치한다',()=>{
+  const s=M.state();M.assign(s,'R-DEMO-003','radio',null);
+  const past=M.summarizeDepartments(s,{start:'2026-09-01',end:'2026-09-15'});
+  assert.equal(past.find(r=>r.department==='network').total,3);
+  const range={start:'2026-09-01',end:M.today};
+  const current=M.summarizeDepartments(s,range);
+  assert.equal(current.find(r=>r.department==='network').total,2);
+  assert.equal(current.find(r=>r.department==='radio').total,3);
+  for(const key of ['total','completed','pending'])assert.equal(current.reduce((sum,r)=>sum+r[key],0),M.summarize(s,range)[key]);
+  s.tasks.find(t=>t.id==='W-DEMO-008').cancelled=true;
+  assert.deepEqual(M.summarizeDepartments(s,range).find(r=>r.department==='security'),{department:'security',total:0,completed:0,pending:0,rate:null});
+  assert.ok(M.summarizeDepartments(s,{start:'2026-01-01',end:'2026-01-31'}).every(r=>r.total===0&&r.rate===null));
+  assert.throws(()=>M.summarizeDepartments(s,{start:M.today,end:'2026-09-01'}));
 });
 
 test('재배정 전 기간은 당시 부서로 집계',()=>{

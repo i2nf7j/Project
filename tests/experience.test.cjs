@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const M=require('../docs/design/mockup/notification-model.js'),s=M.state();
+s.role='user';const r=M.createRequest(s,{target:'알림 검증',type:'점검',description:'시험',wish:'network',tag:'PC'});
+assert.equal(M.inbox.list(s).length,0);s.role='bnoc';assert.equal(M.inbox.unread(s).length,1);
+M.inbox.read(s,M.inbox.list(s)[0].id);assert.equal(M.inbox.unread(s).length,0);
+assert.throws(()=>M.assign(s,r.id,'bad',''));assert.equal(s.notifications.length,1);
+M.assign(s,r.id,'network','PC');assert.equal(s.notifications.length,2);
+M.assign(s,r.id,'network','모니터');assert.equal(s.notifications.length,2);
+s.role='network';assert.equal(M.inbox.unread(s).length,1);const task=s.tasks.find(t=>t.requestId===r.id);M.inbox.read(s,M.inbox.list(s)[0].id);assert.equal(task.confirmed,false);
+s.role='bnoc';M.assign(s,r.id,'radio','');s.role='radio';assert.equal(M.inbox.list(s)[0].kind,'정비 재배정');
+s.role='viewer';assert.equal(M.inbox.list(s).length,0);assert.throws(()=>M.inbox.read(s,s.notifications[0].id));
+console.log('PASS inbox: recipients, read/work separation, invalid and unchanged assignment, reassignment, isolation');

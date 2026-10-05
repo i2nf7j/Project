@@ -1,11 +1,11 @@
 ﻿"use strict";
-// 화면 검토용 데이터와 파일은 현재 페이지 메모리에만 보관합니다.
+// 장비와 첨부파일은 브라우저 IndexedDB에 보관합니다.
 const equipment = [
-  {id:1,department:"네트워크체계팀",network:"국방망",name:"업무용 PC (가상)",project:"업무 단말 교체",year:"2025",status:"설치 완료",version:"시연 1.0",reason:"",note:""},
-  {id:2,department:"가상지원반",network:"전장망",name:"운용 단말 (가상)",project:"작전통신 체계 구축",year:"2024",status:"설치 불가",version:"",reason:"전용 소프트웨어 호환성 제한 (예시)",note:"업체 공문 확보 필요"},
-  {id:3,department:"가상정비반",network:"센서망",name:"센서 관리 PC (가상)",project:"센서 연동 사업",year:"2023",status:"미설치",version:"",reason:"",note:"설치 일정 확인 필요"},
-  {id:4,department:"네트워크체계팀",network:"LTE망",name:"LTE 관리 단말 (가상)",project:"이동통신 장비 도입",year:"2025",status:"확인 필요",version:"",reason:"",note:""},
-  {id:5,department:"네트워크체계팀",network:"VoIP망",name:"전화 관리 PC (가상)",project:"음성통신 체계 개선",year:"2022",status:"설치 완료",version:"시연 1.0",reason:"",note:""}
+  {id:1,department:"네트워크체계반",network:"국방망",name:"업무용 PC (가상)",project:"업무 단말 교체",year:"2025",status:"설치 완료",version:"시연 1.0",reason:"",note:""},
+  {id:2,department:"무선체계반",network:"전장망",name:"운용 단말 (가상)",project:"작전통신 체계 구축",year:"2024",status:"설치 불가",version:"",reason:"전용 소프트웨어 호환성 제한 (예시)",note:"업체 공문 확보 필요"},
+  {id:3,department:"정보체계반",network:"센서망",name:"센서 관리 PC (가상)",project:"센서 연동 사업",year:"2023",status:"미설치",version:"",reason:"",note:"설치 일정 확인 필요"},
+  {id:4,department:"네트워크체계반",network:"LTE망",name:"LTE 관리 단말 (가상)",project:"이동통신 장비 도입",year:"2025",status:"확인 필요",version:"",reason:"",note:""},
+  {id:5,department:"네트워크체계반",network:"VoIP망",name:"전화 관리 PC (가상)",project:"음성통신 체계 개선",year:"2022",status:"설치 완료",version:"시연 1.0",reason:"",note:""}
 ];
 // 원본 공문 하나에 적용 장비 ID를 연결한다. 신규 장비에는 자동 적용하지 않는다.
 const equipmentDocuments = [];
@@ -31,17 +31,11 @@ function renderEquipment(){
     return "<tr>"+cells.map(c=>"<td>"+c+"</td>").join("")+`<td><button class="outline" data-equipment-edit="${e.id}">${security?"현황 수정":"수정"}</button></td></tr>`;
   }).join("")||`<tr><td colspan="${columns.length}" class="equipment-empty">조건에 맞는 장비가 없습니다.</td></tr>`;
 }
-function equipmentRoute(){
-  const active=location.hash==="#equipment";
-  $("#dashboard-view").hidden=active;$("#equipment").hidden=!active;
-  $(".nav-home").classList.toggle("active",!active);
-  if(active){$(".nav-home").removeAttribute("aria-current");$("#equipment-open").setAttribute("aria-current","page");renderEquipment();$("#equipment-title").focus({preventScroll:true});}
-  else{$(".nav-home").setAttribute("aria-current","page");$("#equipment-open").removeAttribute("aria-current");}
-}
 const equipmentOptions=(values,selected)=>values.map(value=>`<option${value===selected?" selected":""}>${escapeEquipment(value)}</option>`).join("");
 function editEquipment(id){
+  if(["user","viewer"].includes(state.role))return;
   const existing=equipment.find(e=>e.id===id);
-  const e=existing||{department:$("#equipment-department").value||"네트워크체계팀",network:$("#equipment-network").value||"국방망",name:"",project:"",year:"",version:"",status:"확인 필요",reason:"",note:""};
+  const e=existing||{department:$("#equipment-department").value||"네트워크체계반",network:$("#equipment-network").value||"국방망",name:"",project:"",year:"",version:"",status:"확인 필요",reason:"",note:""};
   const security=Boolean(existing)&&equipmentTab==="security";
   const candidates=equipment.filter(item=>item.project===e.project&&item.year===e.year);
   const attached=documentsFor(e.id);
@@ -63,13 +57,13 @@ function editEquipment(id){
     <p class="footnote">선택한 장비에 공문만 연결합니다. 백신 버전·설치현황·사유는 이 장비에만 반영됩니다. 연결 해제는 다른 장비에 영향을 주지 않습니다.</p>
     </fieldset>
     <p class="footnote">설치 불가 사유는 필수입니다. 공문 확보 전에는 ‘공문 미첨부’로 표시됩니다.</p>`:
-    `<label>부서<select name="department">${equipmentOptions(["네트워크체계팀","가상지원반","가상정비반"],e.department)}</select></label>
+    `<label>부서<select name="department">${equipmentOptions(["네트워크체계반","무선체계반","정보체계반","사이버 통제실"],e.department)}</select></label>
     <label>망 종류<select name="network">${equipmentOptions(["국방망","전장망","센서망","LTE망","VoIP망","기타"],e.network)}</select></label>
     ${input("name","장비명","required maxlength='100'")}${input("project","사업명","required maxlength='100'")}${input("year","사업년도","type='number' min='1900' max='2100' step='1' required")}
     <p class="footnote">장비 1대당 1건으로 등록합니다. 등록 후 정보보호 프로그램 탭에서 설치현황을 관리하세요.</p>`;
-  dialog(security?"정보보호 프로그램 현황 수정":existing?"장비 수정":"장비 등록",`<form id="equipment-form" class="equipment-form">${body}<p id="equipment-error" role="alert" class="amber"></p><div class="equipment-actions"><button type="button" id="equipment-cancel">취소</button><button type="submit" class="primary">${existing?"수정 반영":"등록"}</button></div></form>`);
+  modal(security?"정보보호 프로그램 현황 수정":existing?"장비 수정":"장비 등록",`<form id="equipment-form" class="equipment-form">${body}<p id="equipment-error" role="alert" class="amber"></p><div class="equipment-actions"><button type="button" id="equipment-cancel">취소</button><button type="submit" class="primary">${existing?"수정 반영":"등록"}</button></div></form>`);
   const form=$("#equipment-form");
-  $("#equipment-cancel").onclick=()=>$("#detail").close();
+  $("#equipment-cancel").onclick=()=>$("#dialog").close();
   if(security){
     const requirements=()=>{form.elements.version.required=form.elements.status.value==="설치 완료";form.elements.reason.required=form.elements.status.value==="설치 불가";};
     form.elements.status.onchange=requirements;requirements();
@@ -81,7 +75,8 @@ function editEquipment(id){
       });
     };
   }
-  form.onsubmit=event=>{
+  form.onsubmit=async event=>{
+    if(["user","viewer"].includes(state.role)){event.preventDefault();return;}
     event.preventDefault();
     const formData=new FormData(form);
     const data=Object.fromEntries(formData);
@@ -106,9 +101,12 @@ function editEquipment(id){
       Object.assign(e,{department:data.department,network:data.network,name:data.name.trim(),project:data.project.trim(),year:data.year});
       if(!existing){e.id=Math.max(0,...equipment.map(item=>item.id))+1;equipment.push(e);}
     }
-    $("#detail").close();renderEquipment();toast("시연 데이터에 반영했습니다. 새로고침하면 초기화됩니다.");
+    clearEdits();$("#dialog").close();renderEquipment();
+    try{await saveEquipmentData();notify("장비와 첨부파일을 이 브라우저에 저장했습니다.");}catch(error){notify("장비 저장에 실패했습니다. 현재 변경은 새로고침하면 사라질 수 있습니다.");}
   };
 }
+function bindEquipment(){
+  if(!equipmentLoaded){$("#equipment").innerHTML="<p class=\"empty\">장비 자료를 불러오는 중입니다.</p>";equipmentReady.then(()=>{if(page==='equipment')render();});return;}
 document.querySelectorAll("[data-equipment-tab]").forEach(button=>{
   button.onclick=()=>{equipmentTab=button.dataset.equipmentTab;renderEquipment();};
   button.onkeydown=event=>{
@@ -125,6 +123,7 @@ $("#equipment-rows").onclick=event=>{
   if(button.dataset.equipmentEdit)editEquipment(Number(button.dataset.equipmentEdit));
   if(button.dataset.equipmentDocument){const doc=equipmentDocuments.find(item=>item.id===Number(button.dataset.equipmentDocument));if(!doc)return;const url=URL.createObjectURL(doc.file),link=document.createElement("a");link.href=url;link.download=doc.file.name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 };
-window.addEventListener("hashchange",equipmentRoute);
-equipmentRoute();
-
+renderEquipment();
+}
+let equipmentLoaded=false;
+const equipmentReady=loadEquipmentData().then(saved=>{if(saved){equipment.splice(0,equipment.length,...saved.equipment.map(e=>({...e,department:({'네트워크체계팀':'네트워크체계반','무선체계팀':'무선체계반','전송체계팀':'정보체계반','사이버(정보보호)팀':'사이버 통제실','가상지원반':'무선체계반','가상정비반':'정보체계반'})[e.department]||e.department})));equipmentDocuments.splice(0,equipmentDocuments.length,...saved.documents);nextDocumentId=saved.nextDocumentId;}}).catch(()=>{notify('장비 저장 자료를 불러오지 못했습니다. 초기 자료를 표시합니다.');}).finally(()=>{equipmentLoaded=true;});

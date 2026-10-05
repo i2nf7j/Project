@@ -1,0 +1,26 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),path=require('node:path'),{pathToFileURL}=require('node:url');
+(async()=>{const browser=await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL||undefined});try{
+ const page=await browser.newPage({viewport:{width:1512,height:1100}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));await page.route('https://api.open-meteo.com/**',r=>r.abort());
+ await page.goto(pathToFileURL(path.resolve('docs/design/mockup.html')).href);
+ await page.locator('nav [data-page=duty]').click();await page.locator('#staffing-date').fill('2026-09-15');
+ await page.locator('[data-edit-duty]').click();await page.locator('[data-copy-duty]').click();
+ await page.locator('[data-roster-select="D-DEMO-1"]').selectOption('P-DEMO-1');
+ await page.locator('[data-roster-select="D-DEMO-2"]').selectOption('P-DEMO-2');
+ await page.locator('[name="kind-D-DEMO-2"]').selectOption('야간');await page.locator('#duty-form .primary').click();
+ await page.locator('nav [data-page=personnel]').click();await page.locator('#staffing-date').fill('2026-09-16');
+ assert.match(await page.locator('[data-person-id="P-DEMO-1"]').textContent(),/당직 후 자동 오프/);
+ assert.match(await page.locator('[data-person-id="P-DEMO-2"]').textContent(),/야간 후 자동 오프/);
+ await page.reload();await page.locator('nav [data-page=personnel]').click();
+ assert.match(await page.locator('[data-person-id="P-DEMO-2"]').textContent(),/야간 후 자동 오프/);
+ await page.screenshot({path:'docs/design/mockup/preview-auto-off.png',fullPage:true});
+ await page.locator('[data-confirm-personnel]').click();
+ await page.locator('nav [data-page=duty]').click();await page.locator('#staffing-date').fill('2026-09-15');await page.locator('[data-edit-duty]').click();
+ assert.equal(await page.locator('[name="kind-D-DEMO-2"]').inputValue(),'야간');
+ await page.locator('[name="kind-D-DEMO-1"]').selectOption('주간');await page.locator('[name="kind-D-DEMO-2"]').selectOption('주간');await page.locator('#duty-form .primary').click();
+ await page.locator('nav [data-page=personnel]').click();await page.locator('#staffing-date').fill('2026-09-16');
+ assert.match(await page.locator('[data-person-id="P-DEMO-1"]').textContent(),/주간/);assert.equal(await page.locator('[data-confirm-personnel]').isEnabled(),true);
+ await page.locator('[data-select-person="P-DEMO-1"]').check();await page.locator('#personnel-bulk-form [name=status]').selectOption('야간');await page.locator('#personnel-bulk-form .primary').click();
+ await page.locator('#staffing-date').fill('2026-09-17');assert.match(await page.locator('[data-person-id="P-DEMO-1"]').textContent(),/야간 후 자동 오프/);
+ assert.deepEqual(errors,[]);console.log('PASS auto off: roster kinds, next day, persistence, edit/reconfirm, personnel night status');
+ }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

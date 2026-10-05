@@ -59,7 +59,7 @@ function renderSystems(name="기반통신"){
 function dialog(title,body){$("#dialog-title").textContent=title;$("#dialog-body").innerHTML=body;if(!$("#detail").open)$("#detail").showModal();}
 function showTask(id){
   const t=tasks.find(t=>t.id===id);
-  dialog(t.title,'<p><strong>'+t.id+'</strong> · 네트워크체계팀</p><p><span class="state '+color(label(t))+'">'+label(t)+'</span></p><p>예정: '+t.date+' '+t.time+'</p><p>'+t.memo+'</p><p class="footnote">작업 확인은 진행 시작과 별도입니다. 조치 완료 후 BNOC가 종결합니다.</p>'+(!t.confirmed?'<button class="primary" data-confirm="'+t.id+'">우리 부서 작업 확인</button>':'<p class="footnote">작업 상태 변경은 이 목업에서 제공하지 않습니다.</p>'));
+  dialog(t.title,'<p><strong>'+t.id+'</strong> · 네트워크체계반</p><p><span class="state '+color(label(t))+'">'+label(t)+'</span></p><p>예정: '+t.date+' '+t.time+'</p><p>'+t.memo+'</p><p class="footnote">작업 확인은 진행 시작과 별도입니다. 조치 완료 후 BNOC가 종결합니다.</p>'+(!t.confirmed?'<button class="primary" data-confirm="'+t.id+'">우리 부서 작업 확인</button>':'<p class="footnote">작업 상태 변경은 이 목업에서 제공하지 않습니다.</p>'));
 }
 let timer;
 function toast(text){$("#toast").textContent=text;$("#toast").classList.add("visible");clearTimeout(timer);timer=setTimeout(()=>$("#toast").classList.remove("visible"),4000);}

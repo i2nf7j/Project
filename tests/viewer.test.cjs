@@ -21,9 +21,20 @@ test('이월·완료일·과거 기간·빈 기간을 집계한다',()=>{
   assert.throws(()=>V.summarize(wing,'2026-09-10','2026-09-01'));
   assert.throws(()=>V.summarize(wing,'2026-09-01','2026-10-01'));
 });
-test('상위 조회자는 개별 작업 조회와 모든 수정이 금지된다',()=>{
+test('상위 조회자는 BNOC 편집용 작업 접근과 모든 수정이 금지된다',()=>{
   const s=M.state();s.role='viewer';
   assert.equal(M.canReadTask(s,s.tasks[0]),false);
   assert.equal(M.canWork(s,s.tasks[0]),false);
   assert.equal(M.canAssign(s),false);assert.equal(M.canSetCpcon(s),false);
+});
+test('작업 내역과 그래프 집계는 같은 기간·부서 자료를 사용한다',()=>{
+  const ids=V.wings.flatMap(w=>w.records.map(r=>r.id));
+  assert.equal(new Set(ids).size,ids.length);
+  for(const wing of V.wings)for(const department of V.departments){
+    const rows=V.listTasks(wing,'2026-09-01',V.asOf,department);
+    const sum=V.summarize(wing,'2026-09-01',V.asOf,department);
+    assert.equal(rows.length,sum.total);
+    assert.equal(rows.filter(r=>r.completed&&r.completed<=V.asOf).length,sum.completed);
+    assert.ok(rows.every(r=>r.department===department&&r.title&&r.result));
+  }
 });

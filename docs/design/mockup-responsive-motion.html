@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정보통신 정비상황공유체계 · HTML 목업</title>
+<style>
+:root{--ink:#1e3047;--muted:#758398;--line:#e5eaf0;--blue:#315ee7;--bg:#f4f6fa;--green:#128476}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button,select,input,textarea{border:1px solid var(--line);border-radius:8px;background:white;color:inherit;padding:9px 12px}button:hover{background:#edf2ff}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #8caaff;outline-offset:3px}h1,h2,h3,p{margin:0}h1{font-size:27px;letter-spacing:-1px}h2{font-size:18px}h3{font-size:16px}small,.muted{color:var(--muted);font-size:13px}.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}.sidebar{background:white;border-right:1px solid var(--line);padding:30px 18px;display:flex;flex-direction:column;gap:25px}.brand{display:flex;gap:11px;align-items:center;padding:0 9px}.logo{background:var(--blue);color:white;border-radius:12px;padding:9px;font-size:22px;font-weight:800}.brand strong{font-size:15px;display:block}.brand small{font-size:10px;letter-spacing:1.5px}.navgroup{margin-bottom:18px}.navgroup>p{font-size:12px;color:#8893a6;margin:18px 12px 8px}.navgroup button{display:block;width:100%;text-align:left;border:0;background:none;font-size:14px;padding:11px 14px;margin:2px 0}.navgroup button.active{background:#edf2ff;color:var(--blue);font-weight:700}.navgroup .sub{padding-left:27px;font-size:13px}.sidebar footer{margin-top:auto;padding:16px 10px;border-top:1px solid var(--line)}.avatar{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#eaf0ff;color:var(--blue);font-size:13px;font-weight:bold;margin-right:8px}.shell{min-width:0}.topbar{height:77px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:15px}.topbar .tools{display:flex;align-items:center;gap:10px}.topbar select{font-size:14px}.dot{display:inline-block;width:7px;height:7px;background:#1ea888;border-radius:50%;margin-right:6px}.workspace{padding:28px 30px}.heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px}.heading p{color:var(--muted);font-size:14px;margin-top:5px}.eyebrow{font-size:11px;color:var(--blue);font-weight:800;letter-spacing:1.5px;margin-bottom:5px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px}.main{min-width:0}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.tile,.card{background:white;border:1px solid var(--line);border-radius:13px}.tile{padding:17px 19px}.tile .value{display:block;margin-top:8px;font-size:23px;font-weight:750}.tile small{font-size:12px}.card{padding:22px}.cardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:10px}.link{border:0;padding:3px 0;background:none;color:var(--blue);font-size:13px;white-space:nowrap}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.stack{display:grid;gap:20px;align-content:start}.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:600;background:#edf1f6;color:#68778a;white-space:nowrap}.green{background:#e6f5ef;color:#128476}.blue{background:#ecf1ff;color:#315ee7}.amber{background:#fff4dd;color:#a16b11}.red{background:#ffeded;color:#c45353}.opsrow{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #f0f2f6}.opsrow:last-child{border:0}.opsname{display:flex;align-items:center;gap:12px}.sysicon{width:35px;height:35px;border-radius:9px;background:#f0f4fb;display:grid;place-items:center;color:#6680aa;font-size:13px}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:13px}.calendar .day{color:#95a0b0;font-size:11px;padding:5px}.calendar button{border:0;min-height:31px;padding:4px;border-radius:7px;position:relative;font-size:13px}.calendar button.today{background:var(--blue);color:white}.calendar button.event:after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:#df9b3f;position:absolute;bottom:2px;left:calc(50% - 2px)}.agenda{margin-top:15px;background:#f7f9fd;padding:12px;border-radius:8px;font-size:13px;border-left:3px solid var(--blue)}table{border-collapse:collapse;width:100%;text-align:left;font-size:14px}th{color:var(--muted);font-weight:500;font-size:12px;background:#f8f9fc}th,td{padding:13px 10px;border-bottom:1px solid var(--line)}.tablewrap{overflow-x:auto}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}.stats>div{padding:13px 8px;background:#f7f9fc;border-radius:8px;text-align:center}.stats strong{display:block;font-size:25px}.stats small{font-size:11px}.barrow{margin-top:16px;font-size:13px}.barlabel{display:flex;justify-content:space-between;margin-bottom:6px}.bar{height:7px;background:#eef1f7;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue);border-radius:8px}.notification{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:16px 0;background:white}.notification strong{display:block;font-size:14px;margin:7px 0}.notification p{font-size:12px;color:var(--muted)}.notice{padding:17px 0;border-bottom:1px solid var(--line)}.notice h3{font-size:14px;margin:9px 0}.notice p{font-size:13px;color:var(--muted)}.footnote{font-size:12px;color:var(--muted);margin-top:20px;display:flex;justify-content:space-between;gap:12px}.filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}.primary{background:var(--blue);color:white;border-color:var(--blue)}.primary:hover{background:#244bc7}.person{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);gap:8px}.person b{font-size:14px}.person span.rank{display:inline-block;width:43px;font-size:13px;color:var(--muted)}.empty{padding:35px;text-align:center;color:var(--muted)}dialog{border:1px solid var(--line);border-radius:16px;padding:26px;max-width:540px;width:calc(100% - 30px);color:var(--ink)}dialog::backdrop{background:#14213b66}dialog p{margin:15px 0}dialog label{display:block;margin-top:14px;font-size:14px}dialog input,dialog select,dialog textarea{width:100%;margin-top:6px}dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}.display .sidebar,.display .rail,.display .screen-only{display:none}.display .app{grid-template-columns:1fr}.display .layout{grid-template-columns:1fr}.display .main{font-size:24px}.display .card h2{font-size:26px}.display td,.display .opsrow,.display .barrow{font-size:22px}.display .badge{font-size:18px}.display .fixednotice{display:block;background:#fff4dd;padding:15px 24px;margin-bottom:20px;border-radius:10px;font-size:22px}.fixednotice{display:none}@media(min-width:1700px){.workspace{padding:35px 45px}.layout{grid-template-columns:minmax(0,1fr) 330px}.card{padding:27px}.calendar button{min-height:40px}}
+
+/* PC and display variant. Minimum supported width: 1280px; no mobile layout. */
+body:not(.display) .heading h1{font-size:clamp(24px,2vw,27px)}
+body:not(.display) :is(.shell,.main,.grid>*,.layout>*){min-width:0}
+body:not(.display) :is(button,a,.card,.tile){transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease}
+@media(hover:hover) and (pointer:fine){
+ body:not(.display) :is(.card,.tile):hover{box-shadow:0 4px 14px rgb(30 48 71 / 8%)}
+ body:not(.display) .navgroup button:not(.active):hover{background:var(--selected,#edf2ff);color:var(--blue)}
+ body:not(.display) button:not(:disabled):hover{box-shadow:0 2px 7px rgb(30 48 71 / 10%)}
+}
+@keyframes institutional-enter{
+ from{opacity:0;transform:translateY(8px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@media(prefers-reduced-motion:no-preference){
+ body:not(.display) :is(.heading,.main,.rail){animation:institutional-enter .45s ease-out both}
+ body:not(.display) .main{animation-delay:.06s}
+ body:not(.display) .rail{animation-delay:.12s}
+}
+
+
+
+@media(prefers-reduced-motion:reduce){
+ body:not(.display) :is(.heading,.main,.rail){animation:none}
+ body:not(.display) :is(button,a,.card,.tile){transition:none}
+}
+
+/* Distinct CPCON hues; display statuses use quiet surfaces instead of side stripes. */
+html body .cpcon-5{--level-bg:#e7f3ed;--level-ink:#216346;--level-border:#8cbba3}
+html body .cpcon-4{--level-bg:#e7effb;--level-ink:#24558d;--level-border:#91afd3}
+html[data-theme=dark] body .cpcon-5{--level-bg:#193d32;--level-ink:#a3e2bf;--level-border:#548c72}
+html[data-theme=dark] body .cpcon-4{--level-bg:#203753;--level-ink:#b0d3ff;--level-border:#668bb8}
+html body :is(.cpcon-5,.cpcon-4):is(.cpcon-card,.level-badge,.level-row.current){
+ background:var(--level-bg);color:var(--level-ink);border-color:var(--level-border);
+}
+html[data-theme=dark] body .level-row:is(.cpcon-5,.cpcon-4):not(.current){
+ background:var(--surface);color:var(--ink);
+}
+html body .display-metrics>div.display-status{
+ border:1px solid var(--line);
+ background:var(--surface);
+ background:color-mix(in srgb,var(--display-status) 5%,var(--surface));
+ box-shadow:none;
+}
+html body .display-metrics>.display-status small{color:var(--muted)}
+html body .display-metrics>.display-status strong{color:var(--display-status)}
+
+/* Schedule fills the operations-only display without enlarging the viewport. */
+.display .display-schedule{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+.display .display-schedule header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.display .display-schedule h3{font-size:clamp(18px,1.5vw,24px)}
+.display .display-schedule header p{font-size:13px;color:var(--muted)}
+.display .display-schedule-row{display:grid;grid-template-columns:minmax(170px,.65fr) minmax(0,2fr) auto;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.display .display-schedule-row time{font-size:clamp(14px,1.15vw,19px);font-variant-numeric:tabular-nums}
+.display .display-schedule-row strong{display:block;font-size:clamp(16px,1.3vw,22px)}
+.display .display-schedule-row small{display:block;font-size:clamp(12px,1vw,16px);color:var(--muted);margin-top:4px}
+.display .display-schedule-row>div:last-child{text-align:right}
+
+.display .display-panel-body:has(.display-schedule){display:flex;flex-direction:column;overflow:hidden;gap:12px}
+.display .display-operation-statuses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;flex-shrink:0}
+.display .display-operation-statuses .display-row{padding:8px 0}
+.display .display-schedule{display:flex;flex-direction:column;flex:1;min-height:0;margin-top:0;padding-top:12px}
+.display .display-schedule header{flex-shrink:0;margin-bottom:8px}
+.display .schedule-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.display .schedule-controls button{font-size:13px;padding:5px 10px;min-height:32px}
+.display .schedule-controls[hidden]{display:none}
+.display .schedule-window{flex:1;min-height:0;overflow:hidden}
+.display .schedule-track{height:100%;display:flex;transition:transform .5s ease}
+.display .schedule-page{flex:0 0 100%;min-width:0;height:100%}
+.display .display-schedule-row{padding:10px 0;gap:14px}
+.display .display-schedule-row small{margin-top:2px}
+@media(prefers-reduced-motion:reduce){.display .schedule-track{transition:none}}
+
+/* PC / display hierarchy and consistent semantic badges. */
+html,body{min-width:1280px}
+html{--status-good-bg:#e7f3ed;--status-good-ink:#216346;--status-info-bg:#e7effb;--status-info-ink:#24558d;--status-warn-bg:#fff1d6;--status-warn-ink:#805400;--status-bad-bg:#fbe8e9;--status-bad-ink:#a32936}
+html[data-theme=dark]{--status-good-bg:#193d32;--status-good-ink:#a3e2bf;--status-info-bg:#203753;--status-info-ink:#b0d3ff;--status-warn-bg:#46391d;--status-warn-ink:#ffda88;--status-bad-bg:#482830;--status-bad-ink:#ffb5bf}
+html body .badge{border-radius:4px;padding:4px 9px;font-weight:650;line-height:1.45;box-shadow:none}
+html body .badge.green{background:var(--status-good-bg);color:var(--status-good-ink)}
+html body .badge.blue{background:var(--status-info-bg);color:var(--status-info-ink)}
+html body .badge.amber{background:var(--status-warn-bg);color:var(--status-warn-ink)}
+html body .badge.red{background:var(--status-bad-bg);color:var(--status-bad-ink)}
+html body :is(.topbar,.navgroup,.filter,.view-tabs,.operation-tabs,.display-controls,.schedule-controls) button{min-height:40px;border-radius:6px;line-height:1.4}
+html body .appearance-tools button{min-width:40px;padding:8px}
+html body :is(.topbar,.display-controls) button svg{width:18px;height:18px;flex-shrink:0}
+html body :is(.topbar,.display-controls) button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+html body.display .display-row strong{font-size:clamp(18px,1.45vw,26px);line-height:1.4;font-weight:700}
+html body.display .display-row small{font-size:clamp(12px,.9vw,16px);line-height:1.45;color:var(--muted)}
+html body.display .display-row .badge{font-size:clamp(14px,1vw,18px)}
+html body.display .display-panel>h2{font-size:clamp(21px,1.7vw,30px);line-height:1.3;margin-bottom:12px}
+html body.display .display-operation-statuses{gap:0 28px}
+html body.display .display-operation-statuses .display-row{padding:10px 0}
+html body.display .display-schedule{padding-top:14px;gap:4px}
+html body.display .display-schedule header{align-items:center}
+html body.display .display-schedule h3{font-size:clamp(18px,1.35vw,24px);line-height:1.4}
+html body.display .display-schedule header p{font-size:12px;margin:0;color:var(--muted)}
+html body.display .schedule-controls{margin-left:auto;font-size:13px;font-variant-numeric:tabular-nums}
+html body.display .schedule-controls button{min-height:36px}
+html body.display .schedule-controls button[hidden]{display:none}
+html body.display .display-schedule-row{grid-template-columns:minmax(180px,.7fr) minmax(0,2fr) minmax(150px,.65fr)}
+html body.display .display-schedule-row time{font-size:clamp(16px,1.15vw,21px);font-weight:650}
+html body.display .display-schedule-row strong{font-size:clamp(17px,1.3vw,23px);line-height:1.4}
+html body.display .display-schedule-row .badge{font-size:clamp(14px,1vw,18px)}
+html body.display .display-schedule-row .is-overdue{color:var(--status-bad-ink);font-weight:700}
+html body.display .display-schedule-row:has(.badge.red){background:color-mix(in srgb,var(--status-bad-bg) 40%,var(--surface));border-radius:6px}
+
+/* Overview has four panels: use a compact scale independent of single-panel views. */
+html body.display .display-board:not(.single) .display-panel{padding:12px 16px}
+html body.display .display-board:not(.single) .display-panel>h2{font-size:clamp(18px,1.2vw,23px);line-height:1.3;margin-bottom:8px}
+html body.display .display-board:not(.single) .display-row{padding:4px 0;gap:10px;font-size:clamp(14px,1vw,18px);line-height:1.35}
+html body.display .display-board:not(.single) .display-row strong{font-size:clamp(15px,1.1vw,20px);line-height:1.35}
+html body.display .display-board:not(.single) .display-row small{font-size:clamp(11px,.8vw,14px);line-height:1.35}
+html body.display .display-board:not(.single) .display-row .badge{font-size:clamp(12px,.85vw,15px);padding:3px 7px}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-panel-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px;align-content:start}
+html body.display .display-board:not(.single) .display-row>div{min-width:0}
+html body.display .display-board:not(.single) .display-panel-body>p{margin:4px 0;font-size:clamp(12px,.9vw,16px);line-height:1.4}
+@media(max-height:800px){
+ html body.display .display-board:not(.single) .display-row{padding:2px 0}
+ html body.display .display-board:not(.single) .display-row strong{font-size:15px}
+ html body.display .display-board:not(.single) .display-row small{font-size:11px}
+}
+
+/* Keep each maintenance item on a wide row; department stays beside the title. */
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-panel-body{grid-template-columns:minmax(0,1fr)}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-row{padding:1px 0}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-row>div{display:flex;align-items:baseline;gap:10px;flex:1}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-row strong{font-size:clamp(13px,.9vw,17px)}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-row small{flex-shrink:0}
+html body.display .display-board:not(.single) .display-panel:nth-child(2) .display-row .badge{padding:1px 5px;font-size:11px}
+
+/* Align filter actions and distinguish interactive metrics in both themes. */
+html body #statistics-form{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;align-items:end;gap:10px}
+html body #statistics-form>label{min-width:0}html body #statistics-form :is(input,select){width:100%;min-width:0}
+html body #statistics-form :is(input,select,button.primary){height:42px;min-height:42px}
+html body #statistics-form>.error{grid-column:1/-1;margin:0}
+html body #statistics-form>.error:empty{display:none}
+html body .stats>div:has(.metric-link){padding:0;background:transparent}
+html body .stats .metric-link{padding:13px 8px;background:var(--surface-soft);border:1px solid var(--line);border-radius:8px;transition:background-color .2s,border-color .2s}
+html body .stats .metric-link:is(:hover,:focus-visible){background:#dce9ff;border-color:#315ee7;box-shadow:none}
+html[data-theme=dark] body .stats .metric-link:is(:hover,:focus-visible){background:#304b6d;border-color:#a4cfee;box-shadow:none}
+html body .stats .metric-link small::after{content:' ↗';color:var(--blue)}
+html body #guide-edit-form label{display:grid;gap:6px;font-size:14px}
+html body #guide-edit-form fieldset{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+html body #guide-edit-form .guide-fields{display:grid;gap:14px}
+html body #guide-edit-form textarea{min-height:80px;resize:vertical}
+
+html body .staffing-toolbar:has([data-confirm-personnel]){display:flex;justify-content:flex-start;align-items:center;gap:12px}
+html body .staffing-toolbar:has([data-confirm-personnel])>label{margin-right:auto}
+html body .staffing-toolbar:has([data-confirm-personnel])>.badge{padding:5px 9px;box-shadow:none}
+html body .staffing-toolbar [data-confirm-personnel]{min-height:40px}
+
+/* Stable instruction tab states: no inset underline / hover shadow interpolation. */
+html body:not(.display) .instruction-tabs button,
+html body:not(.display) .instruction-tabs button:is(:hover,[aria-selected=true]),
+html body:not(.display) .instruction-side button:hover{box-shadow:none;text-decoration:none;transform:none}
+html body:not(.display) .instruction-tabs button{min-height:84px;align-content:center;line-height:1.45;transition:background-color .2s ease,color .2s ease}
+html body:not(.display) .instruction-tabs button[aria-selected=true]{background:var(--selected);color:var(--blue)}
+html body:not(.display) .instruction-tabs button:not([aria-selected=true]):hover{background:var(--surface-soft);color:var(--ink)}
+html body:not(.display) .instruction-side button{min-height:88px;align-content:center;gap:6px;line-height:1.5}
+html body:not(.display) .instruction-side button:hover{background:var(--selected);border-color:var(--blue)}
+html body:not(.display) :is(.filter,.operation-filters,.equipment-toolbar,.report-export-toolbar,.staffing-bulk){align-items:flex-end;gap:12px}
+html body:not(.display) :is(.topbar,.filter,.operation-filters,.equipment-toolbar,.report-export-toolbar,.staffing-toolbar,.staffing-bulk,.view-tabs,.operation-tabs,.instruction-toolbar) :is(input:not([type=checkbox]):not([type=radio]),select,button:not(.link)){
+ min-height:42px;height:42px;font-size:14px;line-height:20px;box-sizing:border-box;padding:10px 12px;
+}
+html body:not(.display) :is(.filter,.operation-filters,.staffing-bulk) label{font-size:14px;line-height:1.45;gap:6px}
+html body:not(.display) :is(.filter,.staffing-bulk)>.error:empty{display:none}
+html body:not(.display) .cardhead{min-height:32px;align-items:center;gap:12px}
+html body:not(.display) .cardhead h2{line-height:1.4}
+html body:not(.display) :is(.request-form,.duty-meta,.duty-edit-row,.instruction-fields) :is(input:not([type=checkbox]):not([type=radio]),select){height:42px;min-height:42px;line-height:20px;box-sizing:border-box}
+html body:not(.display) .person-actions{display:flex;align-items:center;gap:10px}
+html body:not(.display) .person-status{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+@media(prefers-reduced-motion:reduce){
+ html body:not(.display) :is(.instruction-tabs,.instruction-side) button{transition:none}
+}
+</style>
+<link rel="stylesheet" href="mockup/environment.css">
+<link rel="stylesheet" href="mockup/maintenance.css">
+<link rel="stylesheet" href="mockup/gps.css">
+<link rel="stylesheet" href="mockup/typography.css">
+<link rel="stylesheet" href="mockup/operations.css">
+<link rel="stylesheet" href="mockup/instructions.css">
+<script src="mockup/environment.js"></script>
+<link rel="stylesheet" href="mockup/system-operations.css">
+<link rel="stylesheet" href="mockup/experience.css">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('ict-theme')==='dark'?'dark':'light';}catch{}</script>
+<link rel="stylesheet" href="mockup/account.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"><div class="brand"><div class="logo">⌁</div><div><strong>정보통신 정비상황</strong><small>OPERATIONS HUB</small></div></div><nav aria-label="주 메뉴">
+<div class="navgroup"><button data-page="dashboard" class="active">◫ &nbsp; 대시보드</button></div>
+<div class="navgroup"><p>정보통신 운영</p><button data-page="operations">▤ &nbsp; 정보통신 운영현황</button><p>정보통신 상황</p><button class="sub" data-page="cpcon">CPCON</button><button class="sub" data-page="gps">GPS 전파교란 대응체계</button></div>
+<div class="navgroup"><p>부대운영</p><button data-page="personnel">♙ &nbsp; 병력 현황</button><button data-page="duty">◷ &nbsp; 근무자(야간)</button><button data-page="instructions">▧ &nbsp; 지시사항</button></div>
+<div class="navgroup"><p>정비관리</p><button data-page="guide">정비 안내·연락처</button><button data-page="requests">정비 요청</button><button data-page="reception">정비 접수 <span class="badge blue" id="pending-count">2</span></button><button data-page="progress">정비 진행</button><button data-page="statistics">정비 현황</button><button data-page="equipment">장비 관리</button></div>
+</nav><footer><span class="avatar">BN</span><strong id="account-label">BNOC</strong><p class="muted" style="margin-top:10px">가상 A대대 · 시연 계정</p></footer></aside>
+<div class="shell"><header class="topbar"><span class="muted">정보통신 정비상황공유체계 <span style="margin:0 10px">/</span> <b id="breadcrumb">대시보드</b></span><div class="tools"><label class="role-control">시연 계정<select id="demo-role" aria-label="시연 계정 전환"></select></label><span class="muted"><span class="dot"></span>가상 데이터</span><button id="display">▣ 전시기 모드</button><button id="settings" aria-label="내 정보 및 개인 설정">⚙</button></div></header>
+<div class="workspace"><div class="heading"><div><div class="eyebrow">COMMUNICATIONS & MAINTENANCE</div><h1 id="title">대시보드</h1><p id="subtitle">부대 운영과 정비 현황을 한눈에 확인하세요.</p></div><span class="badge blue screen-only">통합 목업 · 브라우저 저장</span></div><div class="layout"><main id="content" class="main"></main><aside class="rail stack"><section class="card" id="activity-card"></section><section class="card" id="dashboard-instructions"></section><section class="card" id="dashboard-work-notices"><div class="cardhead"><h2>업무 안내</h2></div><div class="notice"><h3>정기 예방정비 안내</h3><p>작업 전 안전점검과 등록된 정비 일정을 확인하세요.</p><button class="link" data-open-operation-schedule>정비 일정 보기 →</button></div><div class="notice" id="personnel-work-notice"><h3>일일 병력 입력 안내</h3><p>기준일의 병력 상태를 확인하고 입력을 완료하세요.</p><button class="link" data-page="personnel">병력 현황 보기 →</button></div><p class="muted">시연용 업무 안내</p></section></aside></div><footer class="footnote"><span>업무 시연 기준 2026.09.16 14:30 · 날씨는 외부 연동, 현재 날짜는 기기 시간 기준</span><span><span id="demo-storage-status" role="status">이 브라우저에 저장 · 서버 연동 없음</span></span></footer></div></div></div>
+<div id="feedback" role="status" aria-live="polite"></div>
+<dialog id="dialog" aria-labelledby="dialog-title"><div class="cardhead"><h2 id="dialog-title"></h2><button id="close" aria-label="닫기">✕</button></div><div id="dialog-body"></div></dialog>
+<script src="mockup/maintenance-model.js"></script>
+<script src="mockup/viewer-model.js"></script>
+<script src="mockup/gps-model.js"></script>
+<script src="mockup/operations-model.js"></script>
+<script src="mockup/system-operations-model.js"></script>
+<script src="mockup/notification-model.js"></script>
+<script src="mockup/demo-storage.js"></script>
+<script src="mockup/maintenance-ui.js"></script>
+<script src="mockup/viewer-ui.js"></script>
+<script src="mockup/gps-ui.js"></script>
+<script src="mockup/daily-staffing-ui.js"></script>
+<script src="mockup/equipment-view.js"></script>
+<script src="mockup/equipment.js"></script>
+<script src="mockup/operations-ui.js"></script>
+<script src="mockup/instructions-ui.js"></script>
+<script src="mockup/system-operations-ui.js"></script>
+<script src="mockup/vendor/jszip.min.js"></script>
+<script src="mockup/xlsx-export.js"></script>
+<script src="mockup/report-export.js"></script>
+<script src="mockup/experience-ui.js"></script>
+<script src="mockup/workflow-improvements.js"></script>
+<script src="mockup/account-ui.js"></script>
+<script src="mockup/equipment-bulk.js"></script>
+<script src="mockup/equipment-documents.js"></script>
+<script>
+/* Variant-only enhancement: reuse existing read-only operational plans. */
+const displayOperationsWithoutSchedule = displayOperations;
+displayOperations = function(){
+ const operations = displayOperationsWithoutSchedule();
+ if(displaySection !== 'operations') return operations;
+ const viewer = state.role === 'viewer';
+ const rows = viewer
+  ? V.wings.filter(w=>!viewerFilters.wing||w.id===viewerFilters.wing)
+    .flatMap(w=>(w.operationDetails||[]).flatMap(d=>(d.plans||[]).map(p=>({plan:p,target:w.name+' / '+d.name}))))
+  : operationPlans().map(p=>({plan:p,target:SO.path(state,p.target)}));
+ const cutoff = (viewer ? V.asOf : M.today) + 'T00:00';
+ const planned = rows.filter(({plan:p})=>p.status==='예정')
+  .sort((a,b)=>a.plan.start.localeCompare(b.plan.start));
+ const content = planned.length ? planned.map(({plan:p,target})=>{
+  const overdue = p.end < cutoff;
+  const label = overdue ? '일정 경과 · 완료 확인 필요' : p.start < cutoff ? '계속 일정' : p.start.slice(0,10) === cutoff.slice(0,10) ? '기준일 일정' : '예정';
+  const impactClass = p.impact === '사용 불가' ? 'red' : p.impact === '일부 제한' ? 'amber' : 'green';
+  return '<div class="display-schedule-row"><time>'+esc(p.start.replace('T',' '))+'<small>~ '+esc(p.end.replace('T',' '))+'</small></time><div><strong>'+esc(p.title)+'</strong><small>'+esc(target)+'</small><small>'+esc(p.scope||'')+'</small></div><div><span class="badge '+impactClass+'">'+esc(p.impact)+'</span><small class="schedule-timing'+(overdue?' is-overdue':'')+'">'+esc(label)+'</small></div></div>';
+ }).join('') : '<p class="empty">'+(viewer?'조회 범위에 제공된 예정 정비 일정이 없습니다.':'등록된 예정 정비 일정이 없습니다.')+'</p>';
+ return '<div class="display-operation-statuses">'+operations+'</div><section class="display-schedule" aria-label="체계 정비 일정"><header><h3>체계 정비 일정 <span class="badge">'+planned.length+'건</span></h3><p>업무 기준 '+esc(cutoff.slice(0,10))+' · 예상 서비스 영향 · 완료·취소 제외</p></header>'+content+'</section>';
+};
+</script>
+<script>
+(() => {
+ let dispose=()=>{};
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ function mountSchedule(){
+  dispose();
+  const section=document.querySelector('.display .display-schedule');
+  if(!section)return;
+  const rows=[...section.querySelectorAll('.display-schedule-row')];
+  if(!rows.length)return;
+  const controls=document.createElement('div');controls.className='schedule-controls';
+  controls.innerHTML='<button type="button" aria-label="이전 체계 정비 일정">이전</button><span aria-label="일정 페이지"></span><button type="button" aria-label="다음 체계 정비 일정">다음</button><button type="button" aria-pressed="false">일시정지</button>';
+  section.querySelector('header').append(controls);
+  const viewport=document.createElement('div');viewport.className='schedule-window';
+  const track=document.createElement('div');track.className='schedule-track';
+  viewport.append(track);section.append(viewport);
+  let index=0,pages=[],paused=reduced.matches,hover=false,focus=false;
+  const [prev,next,pause]=controls.querySelectorAll('button'),count=controls.querySelector('span');
+  function show(n){
+   index=(n+pages.length)%pages.length;
+   track.style.transform='translateX(-'+index*100+'%)';
+   pages.forEach((p,i)=>{p.inert=i!==index;p.setAttribute('aria-hidden',String(i!==index));});
+   const first=pages.slice(0,index).reduce((n,p)=>n+p.children.length,0)+1; count.textContent='전체 '+rows.length+'건 · 현재 '+first+'–'+(first+pages[index].children.length-1)+'건 · '+(index+1)+' / '+pages.length;
+   pause.textContent=paused?'자동 재생':'일시정지';pause.title='12초마다 다음 일정 · 마우스 및 키보드 조작 중 정지';pause.setAttribute('aria-pressed',String(paused));
+  }
+  function paginate(){
+   controls.hidden=false;track.replaceChildren();pages=[];
+   let page,used=0;const available=viewport.clientHeight;
+   rows.forEach(row=>{
+    if(!page){page=document.createElement('div');page.className='schedule-page';track.append(page);pages.push(page);}
+    page.append(row);const height=row.getBoundingClientRect().height;
+    if(used&&used+height>available){page=document.createElement('div');page.className='schedule-page';track.append(page);pages.push(page);page.append(row);used=0;}
+    used+=height;
+   });
+   controls.hidden=false;prev.hidden=next.hidden=pause.hidden=pages.length<2;show(Math.min(index,pages.length-1));
+  }
+  prev.onclick=()=>show(index-1);next.onclick=()=>show(index+1);pause.onclick=()=>{paused=!paused;show(index);};
+  section.onmouseenter=()=>{hover=true;};section.onmouseleave=()=>{hover=false;};
+  section.onfocusin=()=>{focus=true;};section.onfocusout=e=>{focus=section.contains(e.relatedTarget);};
+  const timer=setInterval(()=>{if(pages.length>1&&!paused&&!hover&&!focus&&!document.hidden)show(index+1);},12000);
+  const motionChange=()=>{paused=reduced.matches;show(index);};reduced.addEventListener('change',motionChange);
+  let frame;const observer=new ResizeObserver(()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(paginate);});observer.observe(section);
+  paginate();
+  dispose=()=>{clearInterval(timer);observer.disconnect();cancelAnimationFrame(frame);reduced.removeEventListener('change',motionChange);};
+ }
+ const previousRender=render;let pending;
+ render=function(){dispose();previousRender();cancelAnimationFrame(pending);pending=requestAnimationFrame(mountSchedule);};
+ document.fonts.ready.then(()=>{if(document.querySelector('.display-schedule'))render();});
+})();
+</script>
+<script>
+/* Variant-only guide editing, persisted with the existing demo state. */
+(() => {
+ const canEditGuide=()=>['bnoc','admin'].includes(state.role);
+ const guideData=id=>{
+  const base=M.departments.find(d=>d.id===id);
+  return base?{...base,...state.guideOverrides?.[id],id:base.id,name:base.name}:null;
+ };
+ guideTable=function(selectable=false){
+  return '<div class="tablewrap"><table class="guide-table"><thead><tr><th>부서</th><th>담당 업무·장비 / 대표 증상</th><th>부대 내선</th>'+(selectable?'<th>희망 부서</th>':'')+(canEditGuide()?'<th>관리</th>':'')+'</tr></thead><tbody>'+M.departments.map(base=>{
+   const d=guideData(base.id);
+   return '<tr><td><strong>'+esc(d.name)+'</strong></td><td>'+esc(d.duties)+'<p class="muted">'+esc(d.symptoms)+'</p></td><td>'+d.phones.map(([use,number])=>'<span class="guide-phone">'+esc(use)+'<br><strong>'+esc(number)+'</strong></span>').join('')+'</td>'+(selectable?'<td><button type="button" data-guide-select="'+esc(d.id)+'">선택</button></td>':'')+(canEditGuide()?'<td><button type="button" data-guide-edit="'+esc(d.id)+'">수정</button></td>':'')+'</tr>';
+  }).join('')+'</tbody></table></div>';
+ };
+ document.addEventListener('click',event=>{
+  const edit=event.target.closest('[data-guide-edit]');
+  if(edit){
+   if(!canEditGuide()){notify('BNOC 또는 관리자만 수정할 수 있습니다.');return;}
+   const d=guideData(edit.dataset.guideEdit);if(!d)return;
+   modal(d.name+' 안내·연락처 수정','<form id="guide-edit-form" data-department="'+esc(d.id)+'"><div class="guide-fields"><label>담당 업무·장비<textarea name="duties" required maxlength="500">'+esc(d.duties)+'</textarea></label><label>대표 증상<textarea name="symptoms" required maxlength="500">'+esc(d.symptoms)+'</textarea></label>'+d.phones.map(([use,number],i)=>'<fieldset><legend>연락처 '+(i+1)+'</legend><label>연락 용도<input name="use-'+i+'" value="'+esc(use)+'" required maxlength="60"></label><label>전화번호·내선<input name="phone-'+i+'" value="'+esc(number)+'" required maxlength="40"></label></fieldset>').join('')+'</div><p class="error" role="alert" tabindex="-1"></p><p class="field-help">이 브라우저에 저장되며 다른 PC와 동기화되지 않습니다.</p><div class="actions"><button type="button" data-guide-cancel>취소</button><button type="submit" class="primary">저장</button></div></form>');
+  }
+  if(event.target.closest('[data-guide-cancel]'))$('#dialog').close();
+ });
+ document.addEventListener('submit',event=>{
+  const form=event.target;if(form.id!=='guide-edit-form')return;event.preventDefault();
+  try{
+   if(!canEditGuide())throw Error('BNOC 또는 관리자만 수정할 수 있습니다.');
+   const base=guideData(form.dataset.department);if(!base)throw Error('부서를 찾을 수 없습니다.');
+   const data=new FormData(form),read=(name,max)=>{
+    const value=String(data.get(name)||'').trim();
+    if(!value||value.length>max)throw Error('모든 항목을 입력하고 글자 수 제한을 확인하세요.');
+    return value;
+   };
+   const updated={duties:read('duties',500),symptoms:read('symptoms',500),phones:[...form.querySelectorAll('fieldset')].map(row=>[read(row.querySelector('input[name^=use-]').name,60),read(row.querySelector('input[name^=phone-]').name,40)])};
+   if(!updated.phones.length)throw Error('연락처를 한 개 이상 등록하세요.'); state.guideOverrides={...state.guideOverrides,[base.id]:updated};
+   persistDemoState();$('#dialog').close();render();
+   notify(demoStorageMessage||'정비 안내·연락처를 저장했습니다.');
+  }catch(error){formError(form,error);}
+ });
+})();
+</script>
+<script>
+/* Automatic post-duty rest takes precedence over manual period entries. */
+(() => {
+ const previousDay=day=>{const d=new Date(day+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);};
+ M.personnelOffReasonOn=(s,id,day)=>{
+  const prev=previousDay(day);
+  const row=s.dutyRosters[prev]?.rows.find(r=>r.personId===id&&['당직','야간'].includes(r.kind||'당직'));
+  const period=(s.personnelPeriods||[]).filter(p=>p.id===id&&p.start<=prev&&p.end>=prev).at(-1);
+  const kind=row?(row.kind||'당직'):period?.status;
+  return ['당직','야간'].includes(kind)?prev+' '+kind+' 후 오프 고정':'';
+ };
+ const statusBeforeLock=M.personnelStatusOn;
+ M.personnelStatusOn=(s,id,day)=>M.personnelOffReasonOn(s,id,day)?'오프':statusBeforeLock(s,id,day);
+ const setBeforeLock=M.setPersonnelPeriod;
+ M.setPersonnelPeriod=(s,ids,status,start,end)=>{
+  if(!M.canEditStaffing(s))throw Error('BNOC 또는 관리자만 수정할 수 있습니다.');
+  if(status!=='오프'&&Array.isArray(ids)&&start<=end&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(start)&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(end)){
+   const candidate={...s,personnelPeriods:[...(s.personnelPeriods||[]),...ids.map(id=>({id,status,start,end}))]};
+   for(const id of ids){
+    for(let d=new Date(start+'T00:00:00Z');Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)<=end;d.setUTCDate(d.getUTCDate()+1)){
+     const day=d.toISOString().slice(0,10);
+     if(M.personnelOffReasonOn(s,id,day)||M.personnelOffReasonOn(candidate,id,day))
+      throw Error((s.personnel.find(p=>p.id===id)?.name||'선택 인원')+' · '+day+'은 전날 당직·야간 근무 후 오프 고정일입니다. 적용 기간을 조정하세요.');
+    }
+   }
+  }
+  return setBeforeLock(s,ids,status,start,end);
+ };
+ const headerBefore=staffingHeader;
+ staffingHeader=function(kind){return headerBefore(kind).replace('</small></span>','</small>').replace('</span></span>','</span>');};
+ const personnelPageBefore=personnelPage;
+ personnelPage=function(){return personnelPageBefore().replace('직접 지정한 상태 우선','오프 고정일은 상태 변경 불가');};
+ const openDutyBefore=openDuty;
+ openDuty=function(...args){openDutyBefore(...args);const note=document.querySelector('#content .card>p.muted');if(note)note.textContent=note.textContent.replace('직접 지정한 병력 상태가 우선하며','자동 오프가 직접 지정한 병력 상태보다 우선하며');};
+})();
+</script>
+<script>
+/* Contact rows are draft-only until the existing save handler validates them. */
+document.addEventListener('click',event=>{
+ const editable=()=>['bnoc','admin'].includes(state.role);
+ const form=document.querySelector('#guide-edit-form');
+ if(!form||!editable())return;
+ function decorate(){
+  const rows=[...form.querySelectorAll('fieldset')];
+  rows.forEach((row,i)=>{
+   row.querySelector('legend').textContent='연락처 '+(i+1);
+   if(!row.querySelector('[data-guide-remove]')){
+    const remove=document.createElement('button');remove.type='button';
+    remove.dataset.guideRemove='';remove.textContent='연락처 삭제';row.append(remove);
+   }
+   const button=row.querySelector('[data-guide-remove]');
+   button.disabled=rows.length===1;
+   button.setAttribute('aria-label','연락처 '+(i+1)+' 삭제');
+  });
+ }
+ if(event.target.closest('[data-guide-edit]')){
+  const add=document.createElement('button');add.type='button';add.dataset.guideAdd='';
+  add.textContent='+ 연락처 추가';form.querySelector('.guide-fields').after(add);
+  decorate();
+ }
+ if(event.target.closest('[data-guide-add]')){
+  const next=Math.max(-1,...[...form.querySelectorAll('input[name^=use-]')].map(e=>Number(e.name.slice(4))))+1;
+  const row=document.createElement('fieldset');
+  row.innerHTML='<legend></legend><label>연락 용도<input name="use-'+next+'" required maxlength="60" placeholder="예: 접수 담당, 장비 담당"></label><label>전화번호·내선<input name="phone-'+next+'" required maxlength="40" placeholder="전화번호 또는 내선"></label>';
+  form.querySelector('.guide-fields').append(row);decorate();row.querySelector('input').focus();
+ }
+ const remove=event.target.closest('[data-guide-remove]');
+ if(remove&&form.querySelectorAll('fieldset').length>1){
+  const row=remove.closest('fieldset'),focusRow=row.previousElementSibling;
+  row.remove();decorate();
+  (focusRow?.querySelector('input')||form.querySelector('[data-guide-add]')).focus();
+ }
+});
+</script>
+</body>
+</html>

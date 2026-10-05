@@ -2,18 +2,20 @@
 (() => {
   const today = '2026-09-16';
   const types = ['점검','증설','설치','이전','불용','기타'];
+  const ranks = ['대령','중령','소령','대위','중위','소위','준위','원사','상사','중사','하사','병장','상병','일병','이병'];
+  const personnelStatuses = ['주간','당직','야간','출장','오프','휴가','미입력'];
   const departments = [
-    {id:'network', name:'네트워크체계팀', duties:'PC·모니터 정비, 랜선 점검, PC 포맷', symptoms:'화면 출력 불가, PC 부팅 불가, 유선 연결 불가', phones:[['접수 문의','DEMO-1101'],['장비 담당','DEMO-1102']], tags:['PC','모니터','네트워크','기타']},
-    {id:'radio', name:'무선체계팀', duties:'무선 장비 점검·설치 (시연 예시)', symptoms:'송수신 불량, 무선 장비 전원 불량', phones:[['접수 문의','DEMO-1201'],['장비 담당','DEMO-1202']], tags:['무선 장비','안테나','기타']},
-    {id:'transmission', name:'전송체계팀', duties:'전송 장비·회선 점검 (시연 예시)', symptoms:'회선 단절, 전송 장비 경보', phones:[['접수 문의','DEMO-1301'],['회선 담당','DEMO-1302']], tags:['회선 점검','전송 장비','기타']},
-    {id:'security', name:'사이버(정보보호)팀', duties:'정보보호 프로그램·보안 설정 점검 (시연 예시)', symptoms:'백신 업데이트 실패, 보안 프로그램 오류', phones:[['접수 문의','DEMO-1401']], tags:['정보보호 프로그램','보안 설정','기타']}
+    {id:'network', name:'네트워크체계반', duties:'PC·모니터 정비, 랜선 점검, PC 포맷', symptoms:'화면 출력 불가, PC 부팅 불가, 유선 연결 불가', phones:[['접수 문의','DEMO-1101'],['장비 담당','DEMO-1102']], tags:['PC','모니터','네트워크','기타']},
+    {id:'radio', name:'무선체계반', duties:'무선 장비 점검·설치 (시연 예시)', symptoms:'송수신 불량, 무선 장비 전원 불량', phones:[['접수 문의','DEMO-1201'],['장비 담당','DEMO-1202']], tags:['무선 장비','안테나','기타']},
+    {id:'transmission', name:'정보체계반', duties:'전송 장비·회선 점검 (시연 예시)', symptoms:'회선 단절, 전송 장비 경보', phones:[['접수 문의','DEMO-1301'],['회선 담당','DEMO-1302']], tags:['회선 점검','전송 장비','기타']},
+    {id:'security', name:'사이버 통제실', duties:'정보보호 프로그램·보안 설정 점검 (시연 예시)', symptoms:'백신 업데이트 실패, 보안 프로그램 오류', phones:[['접수 문의','DEMO-1401']], tags:['정보보호 프로그램','보안 설정','기타']}
   ];
   const sessions = {
     bnoc:{label:'BNOC', wing:'17', department:null}, admin:{label:'관리자', wing:'17', department:null},
     user:{label:'일반 사용자 · 가상A', wing:'17', department:null},
     network:{label:'정비사 · 네트워크', wing:'17', department:'network'},
     radio:{label:'정비사 · 무선', wing:'17', department:'radio'},
-    transmission:{label:'정비사 · 전송', wing:'17', department:'transmission'},
+    transmission:{label:'정비사 · 정보체계반', wing:'17', department:'transmission'},
     cyber:{label:'사이버(정보보호) 특기', wing:'17', department:'security'},
     viewer:{label:'상위 조회자', wing:null, department:null}
   };
@@ -29,6 +31,15 @@
   const title = r => `[${r.requester}] ${r.target.trim()}${r.quantity ? ` ${r.quantity}${r.unit.trim()}` : ''} ${r.type} 요청`;
   function state() {
     const result = {role:'bnoc', cpcon:{level:5, applied:'2026-09-16T09:00', note:'시연용 정상 단계'}, requests:[], tasks:[], cooperation:[], sequence:20};
+    result.personnel=[
+      ['network','상사','가상 가온'],['network','중사','가상 나래'],['network','하사','가상 다온'],['network','상병','가상 라온'],
+      ['radio','상사','가상 마루'],['radio','중사','가상 바다'],['radio','하사','가상 새봄'],
+      ['transmission','상사','가상 아람'],['transmission','중사','가상 여울'],['transmission','하사','가상 자람']
+    ].map(([department,rank,name],i)=>({id:`P-DEMO-${i+1}`,department,rank,name,status:'주간'}));
+    result.duty={manager:'가상 A대대',unit:'가상 본부중대',start:today+'T18:00',end:'2026-09-17T09:00',rows:[
+      {id:'D-DEMO-1',position:'통신일직',rank:'대위',name:'가상 하늘',phone:'DEMO-1001'},
+      {id:'D-DEMO-2',position:'작통일직',rank:'중위',name:'가상 한결',phone:'DEMO-1002'}
+    ]};
     const fixtures = [
       ['network','모니터','증설',2,'2026-09-02','2026-09-04','모니터'],
       ['network','PC','점검',1,'2026-08-28','2026-09-03','PC'],
@@ -51,20 +62,50 @@
     return result;
   }
   const canAssign = s => ['bnoc','admin'].includes(s.role);
+  const canEditStaffing = s => ['bnoc','admin'].includes(s.role);
   const canSetCpcon = s => ['admin','cyber'].includes(s.role);
   const canReadTask = (s,t) => ['bnoc','admin'].includes(s.role) || sessions[s.role].department === t.department;
   const canWork = (s,t) => canAssign(s) || sessions[s.role].department === t.department;
   const statusAt = (t, date) => t.history.filter(h => h.date <= date).at(-1)?.status || '작업 예정';
   const departmentAt = (t,date) => t.departments.filter(h => h.date <= date).at(-1)?.department || t.department;
   function requireCondition(condition, message) {if (!condition) throw new Error(message);}
+  function updatePersonnel(s,id,data) {
+    requireCondition(canEditStaffing(s), 'BNOC 또는 관리자만 병력 현황을 수정할 수 있습니다.');
+    const person=s.personnel.find(p=>p.id===id);
+    requireCondition(person, '수정할 인원을 확인하세요.');
+    requireCondition(departments.some(d=>d.id===data.department) && ranks.includes(data.rank) && personnelStatuses.includes(data.status), '부서·계급·상태를 확인하세요.');
+    requireCondition(typeof data.name==='string' && data.name.trim() && data.name.trim().length<=40, '성명을 1~40자로 입력하세요.');
+    Object.assign(person,{department:data.department,rank:data.rank,name:data.name.trim(),status:data.status});
+  }
+  function updatePersonnelStatus(s,ids,status) {
+    requireCondition(canEditStaffing(s), 'BNOC 또는 관리자만 병력 현황을 수정할 수 있습니다.');
+    requireCondition(Array.isArray(ids) && ids.length && personnelStatuses.includes(status), '인원과 적용할 상태를 선택하세요.');
+    const people=ids.map(id=>s.personnel.find(p=>p.id===id));
+    requireCondition(people.every(Boolean), '선택한 인원을 확인하세요.');
+    people.forEach(p=>{p.status=status;});
+  }
+  function updateDuty(s,data) {
+    requireCondition(canEditStaffing(s), 'BNOC 또는 관리자만 근무자를 수정할 수 있습니다.');
+    const text=(value,label,max)=>{requireCondition(typeof value==='string' && value.trim() && value.trim().length<=max, `${label}을(를) 1~${max}자로 입력하세요.`);return value.trim();};
+    const manager=text(data.manager,'관리 부대',60),unit=text(data.unit,'근무자 소속',60);
+    const validTime=value=>typeof value==='string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) && Number.isFinite(Date.parse(value+'Z')) && new Date(value+'Z').toISOString().slice(0,16)===value;
+    requireCondition(validTime(data.start) && validTime(data.end) && data.start<data.end, '근무 종료 시각은 시작 시각 이후여야 합니다.');
+    requireCondition(Array.isArray(data.rows) && data.rows.length===s.duty.rows.length && new Set(data.rows.map(r=>r.id)).size===s.duty.rows.length, '근무자 목록을 확인하세요.');
+    const rows=data.rows.map(row=>{
+      requireCondition(s.duty.rows.some(r=>r.id===row.id) && ranks.includes(row.rank), '근무자와 계급을 확인하세요.');
+      return {id:row.id,position:text(row.position,'구역·직책',40),rank:row.rank,name:text(row.name,'성명',40),phone:text(row.phone,'전화번호',30)};
+    });
+    s.duty={manager,unit,start:data.start,end:data.end,rows};
+  }
   function createRequest(s, data) {
-    requireCondition(s.role === 'user', '일반 사용자 역할에서 요청을 등록하세요.');
+    requireCondition(s.role === 'user'||canAssign(s), '일반 사용자 또는 BNOC 역할에서 요청을 등록하세요.');
+    if(canAssign(s))requireCondition(data.requester?.trim(),'대리 접수의 요청 부서를 입력하세요.');
     requireCondition(data.target?.trim() && types.includes(data.type) && data.description?.trim(), '요청 대상·유형·상세 내용을 입력하세요.');
     const quantity = data.quantity === '' || data.quantity == null ? null : Number(data.quantity);
     requireCondition(quantity === null || (Number.isInteger(quantity) && quantity > 0 && data.unit?.trim()), '수량은 양의 정수이며 수량 입력 시 단위가 필요합니다.');
     requireCondition(!data.wish || departments.some(d=>d.id===data.wish), '희망 부서를 확인하세요.');
     requireCondition(validTag(data.wish,data.tag), '희망 부서에 맞는 태그를 선택하세요.');
-    const request = {...data, id:`R-DEMO-${++s.sequence}`, owner:'user', requester:'가상 A부서', target:data.target.trim(), quantity, unit:data.unit?.trim() || '대', primary:null, created:today, closed:null};
+    const request = {...data, id:`R-DEMO-${++s.sequence}`, owner:canAssign(s)?'proxy':'user', requester:canAssign(s)?data.requester.trim():'가상 A부서', receivedBy:canAssign(s)?s.role:'user', target:data.target.trim(), quantity, unit:data.unit?.trim() || '대', primary:null, created:today, closed:null};
     s.requests.push(request);
     return request;
   }
@@ -118,15 +159,26 @@
     requireCondition(levels.some(l=>l.value===Number(level)) && applied, '단계와 적용 시각을 입력하세요.');
     s.cpcon={level:Number(level),applied,note:note.trim()};
   }
-  function summarize(s,{start,end,department=''}) {
+  function summarizeDepartment(s,{start,end},department) {
     requireCondition(/^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end) && start<=end, '시작일과 종료일을 확인하세요.');
     const cutoff=end<today?end:today;
-    const allowed=['bnoc','admin','viewer'].includes(s.role) ? department : sessions[s.role].department;
-    const tasks=s.role==='user'?[]:s.tasks.filter(t=>t.created<=cutoff && (!t.completed || t.completed>=start) && (!allowed || departmentAt(t,cutoff)===allowed));
+    const tasks=s.role==='user'?[]:s.tasks.filter(t=>!t.cancelled&&t.created<=cutoff && (!t.completed || t.completed>=start) && (!department || departmentAt(t,cutoff)===department));
     const rows=tasks.map(t=>({...t, department:departmentAt(t,cutoff), status:statusAt(t,cutoff)}));
     return {rows, cutoff, total:rows.length, carry:rows.filter(t=>t.created<start).length, added:rows.filter(t=>t.created>=start).length, completed:rows.filter(t=>t.completed && t.completed<=cutoff).length, pending:rows.filter(t=>!t.completed || t.completed>cutoff).length, primary:rows.filter(t=>t.participation==='주관').length, cooperation:rows.filter(t=>t.participation==='공조').length};
   }
-  const api={today,types,departments,sessions,levels,departmentName,validTag,title,state,canAssign,canSetCpcon,canReadTask,canWork,statusAt,departmentAt,createRequest,assign,requestCooperation,accept,updateTask,close,setCpcon,summarize};
+  function summarize(s,range) {
+    const department=['bnoc','admin','viewer'].includes(s.role)?range.department:sessions[s.role].department;
+    return summarizeDepartment(s,range,department);
+  }
+  // This demo state contains one squadron. The server must select authorized squadron data.
+  function summarizeDepartments(s,range) {
+    requireCondition(canAssign(s)||Boolean(sessions[s.role]?.department),'부서별 정비 요약 조회 권한이 없습니다.');
+    return departments.map(d=>{
+      const summary=summarizeDepartment(s,range,d.id);
+      return {department:d.id,total:summary.total,completed:summary.completed,pending:summary.pending,rate:summary.total?summary.completed/summary.total:null};
+    });
+  }
+  const api={today,types,ranks,personnelStatuses,departments,sessions,levels,departmentName,validTag,title,state,canAssign,canEditStaffing,updatePersonnel,updatePersonnelStatus,updateDuty,canSetCpcon,canReadTask,canWork,statusAt,departmentAt,createRequest,assign,requestCooperation,accept,updateTask,close,setCpcon,summarize,summarizeDepartments};
   if (typeof module!=='undefined') module.exports=api;
   else window.Maintenance=api;
 })();

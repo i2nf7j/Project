@@ -1,0 +1,20 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const M=require('../docs/design/mockup/system-operations-model.js'),SO=M.systemOperations;
+test('new and saved structures retain links during hierarchy migration',()=>{
+ const s=M.state(),store=SO.ensure(s);
+ assert.equal(SO.rootOf(s,'switch').name,'기반통신체계');
+ assert.equal(store.nodes.find(n=>n.id==='net').kind,'하위 체계');
+ assert.equal(store.nodes.find(n=>n.id==='trans').name,'정보체계');
+ store.nodes=store.nodes.filter(n=>n.id!=='infrastructure');delete store.infrastructureHierarchy;
+ Object.assign(store.nodes.find(n=>n.id==='net'),{parent:'',kind:'체계'});
+ Object.assign(store.nodes.find(n=>n.id==='trans'),{name:'전송체계'});
+ store.nodes.find(n=>n.id==='switch').equipmentId=123;
+ const plans=JSON.stringify(store.plans);SO.ensure(s);SO.ensure(s);
+ assert.equal(store.nodes.filter(n=>n.name==='기반통신체계').length,1);
+ assert.equal(store.nodes.find(n=>n.id==='switch').equipmentId,123);
+ assert.equal(JSON.stringify(store.plans),plans);
+ assert.match(SO.path(s,'switch'),/^기반통신체계 \/ 네트워크체계/);
+ assert.equal(SO.plansOn(s,'2026-09-17','infrastructure').length,1);
+ store.nodes.find(n=>n.id==='net').name='변경한 네트워크';SO.ensure(s);
+ assert.equal(store.nodes.find(n=>n.id==='net').name,'변경한 네트워크');
+});

@@ -1,0 +1,15 @@
+function canManageEquipmentDocuments(){return !['user','viewer'].includes(state.role);}
+function manageEquipmentDocuments(){
+ if(!canManageEquipmentDocuments())return;
+ modal('업체 공문 관리','<p>공문 원본 삭제는 연결된 모든 장비에 적용됩니다. 특정 장비에서만 제외하려면 해당 장비의 현황 수정에서 연결을 해제하세요.</p>'+ (equipmentDocuments.length?'<div class="tablewrap"><table><thead><tr><th>공문 / 사업</th><th>연결 장비</th><th>관리</th></tr></thead><tbody>'+equipmentDocuments.map(d=>'<tr><td>'+esc(d.file.name)+'<small class="task-note">'+esc(d.project)+' · '+esc(d.year)+'</small></td><td>'+d.equipmentIds.length+'대</td><td><button type="button" class="operation-danger" data-document-delete="'+d.id+'">원본 삭제</button></td></tr>').join('')+'</tbody></table></div>':'<p class="empty">등록된 공문이 없습니다.</p>'));
+}
+function deleteEquipmentDocument(id){
+ if(!canManageEquipmentDocuments())return;const doc=equipmentDocuments.find(d=>d.id===id);if(!doc)return;
+ const targets=doc.equipmentIds.map(id=>{const e=equipment.find(a=>a.id===id);return e?equipmentNumber(id)+' · '+e.department+' · '+e.name:equipmentNumber(id);});
+ modal('공문 원본 삭제','<form id="document-delete-form"><p><strong>'+esc(doc.file.name)+'</strong></p><p>'+esc(doc.project)+' · '+esc(doc.year)+'년</p><p>원본 파일과 아래 '+targets.length+'대 장비의 공문 연결을 삭제합니다. 장비와 설치현황은 유지됩니다.</p>'+(targets.length?'<ul>'+targets.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'<p class="muted">현재 연결된 장비가 없는 공문입니다.</p>')+'<label>삭제할 파일명을 입력하세요<input name="filename" required autocomplete="off"></label><p class="error" role="alert"></p><div class="actions"><button type="button" data-document-back>취소</button><button type="submit" class="primary">원본 삭제</button></div></form>');
+ const form=$('#document-delete-form');form.onsubmit=async e=>{e.preventDefault();if(!canManageEquipmentDocuments())return;const error=form.querySelector('.error');if(form.elements.filename.value!==doc.file.name){error.textContent='파일명이 일치하지 않습니다.';return;}const index=equipmentDocuments.indexOf(doc);if(index<0){error.textContent='이미 삭제된 공문입니다.';return;}const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);equipmentDocuments.splice(index,1);
+ try{await saveEquipmentData();clearEdits();renderEquipment();manageEquipmentDocuments();notify('공문 원본과 장비 연결을 삭제했습니다.');}catch{equipmentDocuments.splice(index,0,doc);error.textContent='삭제를 저장하지 못했습니다. 공문은 유지됩니다. 다시 시도하세요.';buttons.forEach(b=>b.disabled=false);}
+ };
+}
+const renderEquipmentWithDocuments=renderEquipment;renderEquipment=function(){renderEquipmentWithDocuments();let button=$('#equipment-documents');if(!button){button=document.createElement('button');button.id='equipment-documents';button.type='button';button.textContent='공문 관리';button.onclick=manageEquipmentDocuments;$('#equipment-add').after(button);}button.hidden=equipmentTab!=='security'||!canManageEquipmentDocuments();};
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-document-delete'))deleteEquipmentDocument(Number(b.dataset.documentDelete));if(b.hasAttribute('data-document-back'))manageEquipmentDocuments();});

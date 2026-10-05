@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
 (async()=>{
-  const browser=await chromium.launch({headless:true});
+  const browser=await chromium.launch({headless:true,...(process.env.TEST_BROWSER_PATH?{executablePath:process.env.TEST_BROWSER_PATH}:{}),...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
@@ -19,6 +19,14 @@ const {pathToFileURL}=require('node:url');
     assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'17');
     assert.equal(await page.locator('.viewer-detail tbody tr').count(),4);
     assert.equal(await page.locator('.viewer-detail .opsrow').count(),4);
+    assert.equal(await page.locator('[data-viewer-department].department-bar').count(),4);
+    const allTasks=await page.locator('.viewer-tasks tbody tr').count();
+    await page.locator('[data-viewer-department="네트워크체계반"]').click();
+    assert.ok(await page.locator('.viewer-tasks tbody tr').count()<allTasks);
+    assert.ok((await page.locator('.viewer-tasks tbody tr').allTextContents()).every(t=>t.includes('네트워크체계반')));
+    await page.locator('[data-viewer-department=""]').click();
+    assert.equal(await page.locator('.viewer-tasks tbody tr').count(),allTasks);
+    await page.screenshot({path:'docs/design/mockup/preview-viewer-details.png',fullPage:true});
     assert.equal(await page.locator('[data-task],[data-request],#cpcon-form').count(),0);
     await page.locator('#viewer-filter [name=wing]').selectOption('a');await page.locator('#viewer-filter button').click();
     assert.match(await page.locator('.viewer-detail').textContent(),/가상 회선 장애/);
@@ -27,10 +35,10 @@ const {pathToFileURL}=require('node:url');
     assert.deepEqual(await page.locator('#content .stats strong').allTextContents(),['0','0','0','—']);
     await page.locator('nav [data-page=operations]').click();assert.match(await page.locator('#content').textContent(),/가상 회선 장애/);
     await page.locator('#viewer-filter [name=start]').fill('2026-02-01');await page.locator('#viewer-filter button').click();assert.match(await page.locator('#viewer-filter .error').textContent(),/시작일/);
-    await page.locator('#demo-role').selectOption('network');assert.equal(await page.locator('#viewer-filter').count(),0);assert.equal(await page.locator('.rail').isVisible(),true);
+    await page.locator('#demo-role').selectOption('network');assert.equal(await page.locator('#viewer-filter').count(),0);assert.equal(await page.locator('nav [data-page=progress]').isVisible(),true);
     await page.locator('#demo-role').selectOption('viewer');assert.equal(await page.locator('#title').textContent(),'비행단 종합 현황');assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'');
-    await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    await page.setViewportSize({width:1280,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     await page.locator('[data-viewer-wing="17"]').click();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-    assert.deepEqual(errors,[]);console.log('PASS: 상위 조회자 전체 비교·비행단 상세·기간 집계·읽기 전용·역할 복귀·모바일');
+    assert.deepEqual(errors,[]);console.log('PASS: 상위 조회자 전체 비교·비행단 상세·기간 집계·읽기 전용·역할 복귀·PC');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

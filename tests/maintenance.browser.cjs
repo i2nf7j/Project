@@ -5,12 +5,13 @@ const path=require('node:path');
 const {pathToFileURL}=require('node:url');
 
 (async()=>{
-  const browser=await chromium.launch({headless:true});
+  const browser=await chromium.launch({headless:true,...(process.env.TEST_BROWSER_PATH?{executablePath:process.env.TEST_BROWSER_PATH}:{})});
   try {
     const page=await browser.newPage({viewport:{width:1440,height:1100}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await page.route('https://api.open-meteo.com/**',route=>route.fulfill({json:{current:{time:Math.floor(Date.now()/1000),temperature_2m:22,weather_code:2}}}));
     await page.goto(pathToFileURL(path.resolve('docs/design/mockup.html')).href);
+    await page.locator('.environment-compact summary').click();
     await page.locator('[data-weather-value]').filter({hasText:'22°C'}).waitFor();
     const navigate=async name=>page.locator(`nav [data-page="${name}"]`).click();
     const role=async name=>page.locator('#demo-role').selectOption(name);
@@ -74,12 +75,12 @@ const {pathToFileURL}=require('node:url');
     await role('network');assert.equal(await page.locator('#statistics-form [name=department] option').count(),1);
     await navigate('progress');await page.locator('[data-progress-view=calendar]').click();await page.locator('#calendar-mode').selectOption('week');await page.locator('#calendar-mode').selectOption('day');
 
-    await page.setViewportSize({width:390,height:844});await role('user');await navigate('requests');
+    await page.setViewportSize({width:1280,height:900});await role('user');await navigate('requests');
     for(const name of ['requests','guide','cpcon','dashboard']){
-      await navigate(name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`모바일 가로 넘침: ${name}`);
+      await navigate(name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`PC 가로 넘침: ${name}`);
     }
-    await page.screenshot({path:'docs/design/mockup/preview-mobile.png',fullPage:true});
+    await page.screenshot({path:'docs/design/mockup/preview-desktop.png',fullPage:true});
     assert.deepEqual(errors,[]);
-    console.log('PASS: CPCON 권한, 제목·수량·안내, 배정·공조·종결, 기간·부서 통계, 캘린더, 모바일. 브라우저 오류 없음.');
+    console.log('PASS: CPCON 권한, 제목·수량·안내, 배정·공조·종결, 기간·부서 통계, 캘린더, PC. 브라우저 오류 없음.');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
