@@ -1,0 +1,20 @@
+{
+  "name": "ict-maintenance-mockup-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static mockup regression tests; separate from the planned application build.",
+  "packageManager": "npm@11.17.0",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "npm": ">=11 <12"
+  },
+  "scripts": {
+    "test": "node run.cjs all",
+    "test:model": "node run.cjs model",
+    "test:browser": "node run.cjs browser",
+    "browser:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

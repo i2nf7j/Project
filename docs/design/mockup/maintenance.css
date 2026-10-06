@@ -17,3 +17,11 @@
 .viewer-mode .layout{grid-template-columns:minmax(0,1fr)}.viewer-mode .rail,.viewer-mode .sidebar footer .muted{display:none}.viewer-comparison{min-width:800px}.viewer-comparison td{vertical-align:middle}.viewer-comparison .task-meta{max-width:360px}.viewer-detail{grid-template-columns:repeat(2,minmax(0,1fr))}.viewer-mode .stat-note{margin-top:14px;margin-bottom:0}
 
 .staffing-bulk{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:16px;background:white;border:1px solid var(--line);border-radius:10px;font-size:14px}.staffing-bulk label{display:flex;align-items:center;gap:8px}.staffing-bulk .error:empty{display:none}.staffing-bulk .error{flex-basis:100%}.staffing-bulk select{padding:7px 10px}.person-identity{display:flex;align-items:center;gap:8px}.person-identity .rank{flex-shrink:0}.person-identity input,.staffing-select-all input{width:17px;height:17px;margin:0;accent-color:var(--blue);flex-shrink:0}.person:has(input:checked){background:#f0f5ff}.duty-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:22px}.duty-edit-row{display:grid;grid-template-columns:1.1fr .65fr 1fr 1fr;gap:12px;padding:16px 0;border-top:1px solid var(--line)}#duty-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0}#duty-form input,#duty-form select{width:100%;min-width:0}#duty-form .error{margin-top:12px}
+.request-contexts{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:0}
+.request-form .request-contexts label{display:inline-flex;align-items:center;gap:7px;margin:6px 20px 6px 0}
+.request-contexts input[type=checkbox]{width:16px;height:16px;margin:0}
+.request-contexts legend{font-size:14px;font-weight:600;padding:0 5px}
+.badge.urgent-badge{background:#fff0ec;color:#a72d17;border:1px solid #edb1a3}
+html[data-theme=dark] .badge.urgent-badge{background:#4a2728;color:#ffbeb0;border-color:#9c6158}
+.request-cancel,.request-history{margin:16px 0;border-top:1px solid var(--line);padding-top:12px}
+.request-history li{font-size:13px;margin:10px 0}.request-history .detail-copy{margin:4px 0}

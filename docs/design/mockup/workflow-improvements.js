@@ -16,7 +16,7 @@ dashboard=function(){
  if(M.canAssign(state)||state.role==='viewer')return previousWorkflowDashboard();
  if(state.role==='user')return card('내 정비 요청',requestList(visibleRequests()),link('requests','＋ 요청하기'))+card('근무자(야간)',duty(),link('duty'))+card('담당 부서 안내',guideTable(),link('guide'));
  const tasks=visibleTasks(),waiting=tasks.filter(t=>!t.confirmed&&!t.completed),today=tasks.filter(t=>t.scheduled===M.today&&!t.completed),held=tasks.filter(t=>taskStatus(t)==='보류');
- return card('확인할 배정 작업',taskTable(waiting),link('progress','배정 작업 전체 →'))+card('공조 수신',cooperationList())+card('오늘 작업',taskTable(today))+card('보류 작업',taskTable(held))+card('체계별 운영현황',ops(),link('operations'))+card('근무자(야간)',duty(),link('duty'));
+ return card('확인할 배정 작업',taskTable(waiting),link('progress','배정 작업 전체 →'))+card('공조 요청·처리',cooperationList())+card('오늘 작업',taskTable(today))+card('보류 작업',taskTable(held))+card('체계별 운영현황',ops(),link('operations'))+card('근무자(야간)',duty(),link('duty'));
 };
 
 const rootDepartment={infrastructure:'network',net:'network',radio:'radio',trans:'transmission',security:'security'};
@@ -27,14 +27,41 @@ function linkOperationWork(plan,announce=false){
  task={id:'W-PLAN-'+plan.id,operationPlanId:plan.id,requestId,department,participation:'주관',tag:null,created:M.today,scheduled:plan.start.slice(0,10),completed:null,confirmed:false,history:[{date:M.today,status:'작업 예정'}],departments:[{date:M.today,department}],note:''};state.tasks.push(task);if(announce)addWorkNotification(department,'계획정비 배정 · '+plan.title,requestId,task.id);
  }
  task.scheduled=plan.start.slice(0,10);const request=state.requests.find(r=>r.id===task.requestId);if(request.owner==='plan'){task.cancelled=plan.status==='취소';request.target=plan.title;request.description=plan.note||plan.scope;request.cancelled=task.cancelled;}
- if(plan.status==='완료'&&!task.completed){task.completed=M.today;task.confirmed=true;task.note=plan.note||'계획정비 완료';task.history.push({date:M.today,status:'조치 완료'});}
+ // Completion is handled by M.updateTask when saving, never while linking.
  plan.taskId=task.id;return task;
 }
-for(const plan of operationPlans())linkOperationWork(plan);
+// Restore legacy saved completions without creating fresh notifications on page load.
+for(const plan of operationPlans()){
+ const task=linkOperationWork(plan);
+ if(plan.status==='완료'&&!task.completed){task.completed=M.today;task.confirmed=true;task.note=plan.completionNote||plan.note||'계획정비 완료';task.history.push({date:M.today,status:'조치 완료'});}
+ if(task.completed)plan.completionNote=task.note;
+}
 const saveLinkedPlan=SO.savePlan;
-SO.savePlan=function(s,data,id=''){const task=s.tasks.find(t=>t.operationPlanId===id);if(task?.completed&&data.status!=='완료')throw Error('조치 완료된 작업은 재개·취소할 수 없습니다.');const chosen=data.taskId?s.tasks.find(t=>t.id===data.taskId&&!t.completed&&!t.cancelled&&(!t.operationPlanId||t.operationPlanId===id)):null;if(data.taskId&&!chosen)throw Error('연결할 작업을 다시 선택하세요.');const department=chosen?.department||task?.department||data.department||rootDepartment[SO.rootOf(s,data.target)?.id];if(!M.departments.some(d=>d.id===department))throw Error('정비 담당 부서를 선택하세요.');const plan=saveLinkedPlan(s,data,id);plan.department=department;if(chosen)chosen.operationPlanId=plan.id;linkOperationWork(plan,!task);persistDemoState();return plan;};
+SO.savePlan=function(s,data,id=''){
+ const task=s.tasks.find(t=>t.operationPlanId===id);
+ if(task?.completed&&data.status!=='완료')throw Error('조치 완료된 작업은 재개·취소할 수 없습니다.');
+ const chosen=data.taskId?s.tasks.find(t=>t.id===data.taskId&&((t===task)||(!t.completed&&!t.cancelled&&!t.operationPlanId))):null;
+ if(data.taskId&&!chosen)throw Error('연결할 작업을 다시 선택하세요.');
+ if(task&&chosen&&chosen!==task)throw Error('이미 연결된 작업은 변경할 수 없습니다.');
+ const linked=chosen||task,department=linked?.department||data.department||rootDepartment[SO.rootOf(s,data.target)?.id];
+ if(!M.departments.some(d=>d.id===department))throw Error('정비 담당 부서를 선택하세요.');
+ const completionNote=data.completionNote??(linked?.completed?linked.note:'');
+ if(data.status==='완료'){
+  if(typeof completionNote!=='string'||!completionNote.trim())throw Error('완료 시 조치 결과를 입력하세요.');
+  if(linked?.completed&&completionNote.trim()!==linked.note)throw Error('조치 완료한 작업의 결과는 변경할 수 없습니다.');
+  if(linked&&!linked.completed){
+   const request=s.requests.find(r=>r.id===linked.requestId);
+   if(!M.canWork(s,linked)||!M.validTag(linked.department,linked.tag)||!request||request.closed||(request.cancelled&&request.owner!=='plan'))throw Error('완료할 수 없는 연결 작업입니다.');
+  }
+ }
+ const plan=saveLinkedPlan(s,{...data,completionNote},id);plan.department=department;
+ if(chosen)chosen.operationPlanId=plan.id;
+ const work=linkOperationWork(plan,!task);
+ if(plan.status==='완료'&&!work.completed)M.updateTask(s,work.id,{tag:work.tag,status:'조치 완료',note:plan.completionNote});
+ persistDemoState();return plan;
+};
 const updateLinkedTask=M.updateTask;
-M.updateTask=function(s,id,data){const result=updateLinkedTask(s,id,data),task=s.tasks.find(t=>t.id===id);if(task.operationPlanId){const plan=operationPlans().find(p=>p.id===task.operationPlanId);if(plan){if(plan.status!=='취소')plan.status=task.completed?'완료':'예정';plan.note=task.note;}}persistDemoState();return result;};
+M.updateTask=function(s,id,data){const result=updateLinkedTask(s,id,data),task=s.tasks.find(t=>t.id===id);if(task.operationPlanId){const plan=operationPlans().find(p=>p.id===task.operationPlanId);if(plan){if(plan.status!=='취소')plan.status=task.completed?'완료':'예정';if(task.completed)plan.completionNote=task.note;else plan.note=task.note;}}persistDemoState();return result;};
 const openLinkedTask=openTask;
 openTask=function(id){openLinkedTask(id);const task=visibleTasks().find(t=>t.id===id);if(task?.operationPlanId){const button=document.createElement('button');button.textContent='연결된 운영 영향·일정 보기';button.onclick=()=>{const plan=operationPlans().find(p=>p.id===task.operationPlanId);$('#dialog').close();page='operations';operationTab='schedule';operationDay=plan.start.slice(0,10);systemFilter=SO.rootOf(state,plan.target)?.id||'';render();};$('#dialog-body').prepend(button);}};
 const operationCardWithWork=operationPlanCard;
@@ -51,7 +78,7 @@ const beforeSharedDailyReport=dailyReport;dailyReport=function(day){refreshShare
 const beforeSharedMaintenanceReport=maintenanceReport;maintenanceReport=function(range){refreshSharedWing();return beforeSharedMaintenanceReport(range);};
 
 const formWithWorkDepartment=operationForm;
-operationForm=function(kind,id,parentId='',targetId=''){formWithWorkDepartment(kind,id,parentId,targetId);if(kind!=='plan'||!SO.canEdit(state))return;const form=$('#system-operation-form');if(!form)return;const plan=operationPlans().find(p=>p.id===id),task=state.tasks.find(t=>t.operationPlanId===id),selected=task?.department||rootDepartment[SO.rootOf(state,plan?.target||targetId)?.id]||'';const label=document.createElement('label');label.innerHTML='정비 담당 부서<select name="department">'+departmentOptions(selected,'대상 체계 기준 자동 지정')+'</select>';if(task)label.querySelector('select').disabled=true;form.querySelector('.error').before(label);if(!id){const work=document.createElement('label');work.className='wide';work.innerHTML='기존 작업 연결<select name="taskId"><option value="">새 계획정비 작업 생성</option>'+state.tasks.filter(t=>!t.completed&&!t.cancelled&&!t.operationPlanId).map(t=>'<option value="'+t.id+'">'+esc(workDisplayName(t.id)+' · '+M.title(state.requests.find(r=>r.id===t.requestId)))+'</option>').join('')+'</select>';form.querySelector('.error').before(work);}const hint=document.createElement('p');hint.className='wide field-help';hint.textContent='새 계획정비는 정비 현황에 1건으로 집계됩니다. 기존 작업 연결은 중복 집계하지 않습니다. 신규는 등록·배정일, 완료는 조치 완료일 기준이며 새 계획정비 취소 시 집계에서 제외됩니다.';form.querySelector('.error').before(hint);editBaselines.set(form,formValues(form));};
+operationForm=function(kind,id,parentId='',targetId=''){formWithWorkDepartment(kind,id,parentId,targetId);if(kind!=='plan'||!SO.canEdit(state))return;const form=$('#system-operation-form');if(!form)return;const plan=operationPlans().find(p=>p.id===id),task=state.tasks.find(t=>t.operationPlanId===id),selected=task?.department||rootDepartment[SO.rootOf(state,plan?.target||targetId)?.id]||'';const label=document.createElement('label');label.innerHTML='정비 담당 부서<select name="department">'+departmentOptions(selected,'대상 체계 기준 자동 지정')+'</select>';if(task)label.querySelector('select').disabled=true;form.querySelector('.error').before(label);if(!id){const work=document.createElement('label');work.className='wide';work.innerHTML='기존 작업 연결<select name="taskId"><option value="">새 계획정비 작업 생성</option>'+state.tasks.filter(t=>!t.completed&&!t.cancelled&&!t.operationPlanId).map(t=>'<option value="'+t.id+'">'+esc(workDisplayName(t.id)+' · '+M.title(state.requests.find(r=>r.id===t.requestId)))+'</option>').join('')+'</select>';form.querySelector('.error').before(work);}const result=document.createElement('label');result.className='wide';result.innerHTML='조치 결과 (완료 시 필수)<textarea name="completionNote"></textarea>';const resultInput=result.querySelector('textarea');resultInput.value=task?.completed?task.note:plan?.completionNote||'';resultInput.readOnly=Boolean(task?.completed);const syncResult=()=>{result.hidden=form.elements.status.value!=='완료';resultInput.disabled=result.hidden;resultInput.required=!result.hidden;};form.elements.status.addEventListener('change',syncResult);syncResult();form.querySelector('.error').before(result);const hint=document.createElement('p');hint.className='wide field-help';hint.textContent='새 계획정비는 정비 현황에 1건으로 집계됩니다. 기존 작업 연결은 중복 집계하지 않습니다. 신규는 등록·배정일, 완료는 조치 완료일 기준이며 새 계획정비 취소 시 집계에서 제외됩니다. 완료 시 조치 결과를 입력하면 연결 작업과 이력에 반영하고 BNOC에 한 번 알립니다.';form.querySelector('.error').before(hint);editBaselines.set(form,formValues(form));};
 function syncEquipmentReferences(){
  let changed=false;
  for(const node of operationNodes().filter(n=>n.kind==='장비')){

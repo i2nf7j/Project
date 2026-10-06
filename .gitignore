@@ -1,0 +1,9 @@
+# Installed test dependencies and generated output
+node_modules/
+/tmp/
+/test-results/
+/playwright-report/
+/debug.log
+/.tmp-off-tools/
+/.tmp-account-*.png
+.DS_Store

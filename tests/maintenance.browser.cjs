@@ -1,11 +1,11 @@
-// npm으로 설치한 Playwright가 필요합니다. 실행 방법은 목업 README를 참고하세요.
-const {chromium}=require('playwright');
+// 실행 방법은 tests/README.md를 참고하세요.
+const {launchBrowser}=require('./browser.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
 
 (async()=>{
-  const browser=await chromium.launch({headless:true,...(process.env.TEST_BROWSER_PATH?{executablePath:process.env.TEST_BROWSER_PATH}:{})});
+  const browser=await launchBrowser();
   try {
     const page=await browser.newPage({viewport:{width:1440,height:1100}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -15,14 +15,14 @@ const {pathToFileURL}=require('node:url');
     await page.locator('[data-weather-value]').filter({hasText:'22°C'}).waitFor();
     const navigate=async name=>page.locator(`nav [data-page="${name}"]`).click();
     const role=async name=>page.locator('#demo-role').selectOption(name);
-    await page.screenshot({path:'docs/design/mockup/preview-integrated.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/maintenance-preview-integrated.png',fullPage:true});
 
     await navigate('cpcon');assert.equal(await page.locator('#cpcon-form').count(),0);
     await role('admin');await page.locator('#cpcon-form [name=level]').selectOption('2');
     await page.locator('#cpcon-form [name=note]').fill('브라우저 시연 단계');await page.locator('#cpcon-form button').click();
     await navigate('dashboard');assert.equal(await page.locator('.cpcon-card.cpcon-2').count(),1);
     await role('cyber');await navigate('cpcon');assert.equal(await page.locator('#cpcon-form').count(),1);
-    await page.screenshot({path:'docs/design/mockup/preview-cpcon.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/maintenance-preview-cpcon.png',fullPage:true});
 
     await role('user');await navigate('requests');
     await page.locator('#request-form [name=target]').fill('모니터');
@@ -40,7 +40,7 @@ const {pathToFileURL}=require('node:url');
     assert.equal(await page.locator('#request-form [name=tag]').inputValue(),'');
     assert.equal(await page.locator('#request-form [name=tag] option[value="모니터"]').count(),0);
     await page.locator('#request-form [name=wish]').selectOption('network');await page.locator('#request-form [name=tag]').selectOption('모니터');
-    await page.screenshot({path:'docs/design/mockup/preview-request.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/maintenance-preview-request.png',fullPage:true});
     await page.locator('#request-form button[type=submit]').click();
     const requestId=await page.evaluate(()=>state.requests.at(-1).id);
     assert.equal(await page.locator(`[data-request="${requestId}"]`).count(),1);
@@ -71,7 +71,7 @@ const {pathToFileURL}=require('node:url');
     assert.match(await page.locator('#content').textContent(),/조회 조건에 해당하는 작업이 없습니다/);
     await page.locator('#statistics-form [name=period]').selectOption('month');await page.locator('#statistics-form [name=department]').selectOption('');await page.locator('#statistics-form button').click();
     await page.locator('[data-stat-department=radio]').click();assert.match(await page.locator('#content').textContent(),/그래프·수치 선택 조건/);await page.locator('[data-clear-drill]').click();
-    await page.screenshot({path:'docs/design/mockup/preview-statistics.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/maintenance-preview-statistics.png',fullPage:true});
     await role('network');assert.equal(await page.locator('#statistics-form [name=department] option').count(),1);
     await navigate('progress');await page.locator('[data-progress-view=calendar]').click();await page.locator('#calendar-mode').selectOption('week');await page.locator('#calendar-mode').selectOption('day');
 
@@ -79,7 +79,7 @@ const {pathToFileURL}=require('node:url');
     for(const name of ['requests','guide','cpcon','dashboard']){
       await navigate(name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`PC 가로 넘침: ${name}`);
     }
-    await page.screenshot({path:'docs/design/mockup/preview-desktop.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/maintenance-preview-desktop.png',fullPage:true});
     assert.deepEqual(errors,[]);
     console.log('PASS: CPCON 권한, 제목·수량·안내, 배정·공조·종결, 기간·부서 통계, 캘린더, PC. 브라우저 오류 없음.');
   } finally {await browser.close();}

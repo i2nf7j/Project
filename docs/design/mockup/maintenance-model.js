@@ -2,6 +2,7 @@
 (() => {
   const today = '2026-09-16';
   const types = ['점검','증설','설치','이전','불용','기타'];
+  const requestContexts = ['지휘관 요청','참모 요청','작전 관련'];
   const ranks = ['대령','중령','소령','대위','중위','소위','준위','원사','상사','중사','하사','병장','상병','일병','이병'];
   const personnelStatuses = ['주간','당직','야간','출장','오프','휴가','미입력'];
   const departments = [
@@ -105,14 +106,19 @@
     requireCondition(quantity === null || (Number.isInteger(quantity) && quantity > 0 && data.unit?.trim()), '수량은 양의 정수이며 수량 입력 시 단위가 필요합니다.');
     requireCondition(!data.wish || departments.some(d=>d.id===data.wish), '희망 부서를 확인하세요.');
     requireCondition(validTag(data.wish,data.tag), '희망 부서에 맞는 태그를 선택하세요.');
+    const urgency=data.urgency||'일반',contexts=data.contexts||[];
+    requireCondition(['일반','긴급'].includes(urgency), '요청 긴급도를 확인하세요.');
+    requireCondition(Array.isArray(contexts)&&contexts.every(c=>requestContexts.includes(c)), '요청 성격을 확인하세요.');
+    requireCondition(urgency!=='긴급'||(typeof data.urgentReason==='string'&&data.urgentReason.trim()), '긴급 사유를 입력하세요.');
     const request = {...data, id:`R-DEMO-${++s.sequence}`, owner:canAssign(s)?'proxy':'user', requester:canAssign(s)?data.requester.trim():'가상 A부서', receivedBy:canAssign(s)?s.role:'user', target:data.target.trim(), quantity, unit:data.unit?.trim() || '대', primary:null, created:today, closed:null};
+    Object.assign(request,{urgency,contexts:[...new Set(contexts)],urgentReason:urgency==='긴급'?data.urgentReason.trim():'',urgencyReview:null,requestHistory:[]});
     s.requests.push(request);
     return request;
   }
   function assign(s, id, department, tag) {
     requireCondition(canAssign(s), 'BNOC 또는 관리자만 배정할 수 있습니다.');
     const r = s.requests.find(r=>r.id===id);
-    requireCondition(r && !r.closed && departments.some(d=>d.id===department), '배정 가능한 요청과 주관 부서를 확인하세요.');
+    requireCondition(r && !r.closed && !r.cancelled && departments.some(d=>d.id===department), '배정 가능한 요청과 주관 부서를 확인하세요.');
     requireCondition(validTag(department,tag), '주관 부서에 맞는 태그를 선택하세요.');
     const existing = s.tasks.find(t=>t.requestId===id && t.participation==='주관');
     requireCondition(!existing || !existing.completed, '조치 완료한 작업은 재배정할 수 없습니다.');
@@ -131,10 +137,29 @@
     requireCondition(!s.tasks.some(w=>w.requestId===t.requestId && w.department===to) && !s.cooperation.some(c=>c.requestId===t.requestId && c.to===to && c.status==='대기'), '이미 참여 중이거나 공조 요청을 받은 부서입니다.');
     s.cooperation.push({id:`C-DEMO-${++s.sequence}`, requestId:t.requestId, from:t.department, to, reason:reason.trim(), status:'대기'});
   }
+  function confirmUrgency(s,id) {
+    const r=s.requests.find(r=>r.id===id);
+    requireCondition(canAssign(s)&&r&&r.urgency==='긴급'&&!r.cancelled&&!r.closed,'긴급 확인 권한과 요청 상태를 확인하세요.');
+    requireCondition(!r.urgencyReview,'이미 확인한 긴급 요청입니다.');
+    r.urgencyReview={by:s.role,at:new Date().toISOString()};
+    (r.requestHistory||(r.requestHistory=[])).push({action:'긴급 확인',by:s.role,at:r.urgencyReview.at,reason:r.urgentReason});
+  }
+  function canCancelRequest(s,r) {
+    return Boolean(r&&!r.primary&&!r.closed&&!r.cancelled&&!s.tasks.some(t=>t.requestId===r.id)&&!s.cooperation.some(c=>c.requestId===r.id)&&
+      (canAssign(s)||(s.role==='user'&&r.owner==='user')));
+  }
+  function cancelRequest(s,id,reason) {
+    const r=s.requests.find(r=>r.id===id);
+    requireCondition(canCancelRequest(s,r),'배정 전 요청만 요청자 본인·BNOC·관리자가 취소할 수 있습니다.');
+    requireCondition(typeof reason==='string'&&reason.trim(),'취소 사유를 입력하세요.');
+    Object.assign(r,{cancelled:true,cancelReason:reason.trim(),cancelledBy:s.role,cancelledAt:new Date().toISOString()});
+    (r.requestHistory||(r.requestHistory=[])).push({action:'요청 취소',by:s.role,at:r.cancelledAt,reason:r.cancelReason});
+  }
   function accept(s,id,tag) {
     const c=s.cooperation.find(c=>c.id===id);
     requireCondition(c && sessions[s.role].department===c.to, '공조받은 부서의 역할에서 수락하세요.');
     requireCondition(c.status==='대기', '이미 처리된 공조 요청입니다.');
+    requireCondition(s.requests.some(r=>r.id===c.requestId && !r.closed && !r.cancelled), '처리 가능한 접수를 확인하세요.');
     requireCondition(validTag(c.to,tag), '공조 부서에 맞는 태그를 선택하세요.');
     c.status='수락';
     s.tasks.push({id:`W-DEMO-${++s.sequence}`, requestId:c.requestId, department:c.to, tag:tag || null, participation:'공조', created:today, scheduled:today, completed:null, confirmed:false, history:[{date:today,status:'작업 예정'}], departments:[{date:today,department:c.to}], note:''});
@@ -148,10 +173,30 @@
     t.tag=tag || null; t.note=note.trim(); t.confirmed=true;
     t.history.push({date:today,status}); if (status==='조치 완료') t.completed=today;
   }
+  function canResolveCooperation(s,c,decision) {
+    const department=sessions[s.role]?.department;
+    return Boolean(c && c.status==='대기' && s.requests.some(r=>r.id===c.requestId && !r.closed && !r.cancelled) &&
+      ((decision==='거절' && department===c.to) || (decision==='철회' && department===c.from)));
+  }
+  function resolveCooperation(s,id,decision,reason) {
+    const c=s.cooperation.find(c=>c.id===id);
+    requireCondition(canResolveCooperation(s,c,decision), '대기 공조는 수신 부서만 거절하고 요청 부서만 철회할 수 있습니다.');
+    requireCondition(typeof reason==='string' && reason.trim(), '공조 처리 사유를 입력하세요.');
+    Object.assign(c,{status:decision,resolutionReason:reason.trim(),resolvedBy:s.role,resolvedAt:new Date().toISOString()});
+  }
+  function requestStatus(s,id) {
+    const r=s.requests.find(r=>r.id===id),tasks=s.tasks.filter(t=>t.requestId===id);
+    if(!r)return null;
+    if(r.cancelled)return '취소';
+    if(r.closed)return '종결';
+    if(!r.primary)return '접수 대기';
+    if(tasks.length && tasks.every(t=>t.completed))return s.cooperation.some(c=>c.requestId===id && c.status==='대기')?'공조 처리 대기':'종결 대기';
+    return '조치 중';
+  }
   function close(s,id) {
-    const r=s.requests.find(r=>r.id===id), tasks=s.tasks.filter(t=>t.requestId===id);
+    const r=s.requests.find(r=>r.id===id);
     requireCondition(canAssign(s) && r && !r.closed, '종결 권한과 접수 상태를 확인하세요.');
-    requireCondition(tasks.length && tasks.every(t=>t.completed) && !s.cooperation.some(c=>c.requestId===id && c.status==='대기'), '모든 작업 완료와 공조 요청 처리가 필요합니다.');
+    requireCondition(requestStatus(s,id)==='종결 대기', '모든 작업 완료와 공조 요청 처리가 필요합니다.');
     r.closed=today;
   }
   function setCpcon(s,level,applied,note) {
@@ -178,7 +223,7 @@
       return {department:d.id,total:summary.total,completed:summary.completed,pending:summary.pending,rate:summary.total?summary.completed/summary.total:null};
     });
   }
-  const api={today,types,ranks,personnelStatuses,departments,sessions,levels,departmentName,validTag,title,state,canAssign,canEditStaffing,updatePersonnel,updatePersonnelStatus,updateDuty,canSetCpcon,canReadTask,canWork,statusAt,departmentAt,createRequest,assign,requestCooperation,accept,updateTask,close,setCpcon,summarize,summarizeDepartments};
+  const api={today,types,requestContexts,ranks,personnelStatuses,departments,sessions,levels,departmentName,validTag,title,state,canAssign,canEditStaffing,updatePersonnel,updatePersonnelStatus,updateDuty,canSetCpcon,canReadTask,canWork,statusAt,departmentAt,createRequest,assign,confirmUrgency,canCancelRequest,cancelRequest,requestCooperation,accept,canResolveCooperation,resolveCooperation,requestStatus,updateTask,close,setCpcon,summarize,summarizeDepartments};
   if (typeof module!=='undefined') module.exports=api;
   else window.Maintenance=api;
 })();

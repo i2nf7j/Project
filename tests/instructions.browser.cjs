@@ -1,9 +1,9 @@
-const {chromium}=require('playwright');
+const {launchBrowser}=require('./browser.cjs');
 const assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
 const path=require('node:path');
 (async()=>{
-  const browser=await chromium.launch({headless:true,...(process.env.TEST_BROWSER_PATH?{executablePath:process.env.TEST_BROWSER_PATH}:{channel:'msedge'})});
+  const browser=await launchBrowser();
   try{
     const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
     page.on('pageerror',error=>errors.push(error.message));

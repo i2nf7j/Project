@@ -1,5 +1,5 @@
-const {chromium}=require('../.tmp-off-tools/node_modules/playwright'),assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),path=require('node:path');
-(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.TEST_BROWSER_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});try{
+const {launchBrowser}=require('./browser.cjs'),assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),path=require('node:path');
+(async()=>{const browser=await launchBrowser();try{
 const p=await browser.newPage({viewport:{width:1366,height:900}}),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.route('https://api.open-meteo.com/**',r=>r.abort());await p.goto(pathToFileURL(path.resolve('docs/design/mockup.html')).href);await p.evaluate(()=>equipmentReady);
 await p.locator('#demo-role').selectOption('user');assert.equal(await p.locator('nav [data-page=personnel]:visible').count(),0);await p.locator('nav [data-page=duty]').click();assert.equal(await p.evaluate(()=>canVisit('personnel')),false);assert.equal(await p.evaluate(()=>dailyReport(M.today).length),3);
 await p.locator('#demo-role').selectOption('network');assert.equal(await p.evaluate(()=>canVisit('personnel')),true);

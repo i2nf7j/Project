@@ -1,9 +1,9 @@
-const {chromium}=require('playwright');
+const {launchBrowser}=require('./browser.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
 (async()=>{
-  const browser=await chromium.launch({headless:true,...(process.env.TEST_BROWSER_PATH?{executablePath:process.env.TEST_BROWSER_PATH}:{}),...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})});
+  const browser=await launchBrowser();
   try{
     const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
@@ -14,7 +14,7 @@ const {pathToFileURL}=require('node:url');
     assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'');
     assert.equal(await page.locator('.rail').isVisible(),false);
     for(const menu of ['requests','reception','progress','cpcon','personnel'])assert.equal(await page.locator(`nav [data-page=${menu}]`).isVisible(),false);
-    await page.screenshot({path:'docs/design/mockup/preview-viewer.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/viewer-preview-viewer.png',fullPage:true});
     await page.locator('[data-viewer-wing="17"]').click();
     assert.equal(await page.locator('#viewer-filter [name=wing]').inputValue(),'17');
     assert.equal(await page.locator('.viewer-detail tbody tr').count(),4);
@@ -26,7 +26,7 @@ const {pathToFileURL}=require('node:url');
     assert.ok((await page.locator('.viewer-tasks tbody tr').allTextContents()).every(t=>t.includes('네트워크체계반')));
     await page.locator('[data-viewer-department=""]').click();
     assert.equal(await page.locator('.viewer-tasks tbody tr').count(),allTasks);
-    await page.screenshot({path:'docs/design/mockup/preview-viewer-details.png',fullPage:true});
+    await page.screenshot({path:'tmp/test-results/viewer-preview-viewer-details.png',fullPage:true});
     assert.equal(await page.locator('[data-task],[data-request],#cpcon-form').count(),0);
     await page.locator('#viewer-filter [name=wing]').selectOption('a');await page.locator('#viewer-filter button').click();
     assert.match(await page.locator('.viewer-detail').textContent(),/가상 회선 장애/);

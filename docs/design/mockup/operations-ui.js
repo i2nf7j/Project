@@ -1,4 +1,4 @@
-const editableForms='#operation-remove-form,#system-operation-form,#request-form,#assignment-form,#task-form,#cooperation-form,#cpcon-form,#personnel-form,#duty-form,#equipment-form,#instruction-form';
+const editableForms='#operation-remove-form,#system-operation-form,#request-form,#assignment-form,#task-form,#cooperation-form,#cooperation-resolution-form,#cpcon-form,#personnel-form,#duty-form,#equipment-form,#instruction-form';
 let editBaselines=new Map(),forcedEdit=false,workQueue='';
 const formValues=form=>JSON.stringify([...form.elements].filter(e=>e.name).map(e=>[e.name,e.type==='file'?[...e.files].map(f=>f.name+f.size+f.lastModified):e.type==='checkbox'?e.checked:e.value]));
 function watchEdits(){document.querySelectorAll(editableForms).forEach(form=>{if(!editBaselines.has(form))editBaselines.set(form,formValues(form));});}
@@ -36,4 +36,4 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 });
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-reset-demo]'))return;if(!confirm('이 브라우저에 저장한 시연 자료와 장비 첨부파일을 초기화할까요?'))return;try{await clearEquipmentData();localStorage.removeItem(demoStorageKey);clearEdits();location.reload();}catch(error){notify('초기화하지 못했습니다. 브라우저 저장 설정을 확인하세요.');}});
 // 모든 모델 변경이 성공한 뒤에만 저장한다. 조회·폼 입력은 저장하지 않는다.
-for(const name of ['createRequest','assign','requestCooperation','accept','updateTask','close','setCpcon','updatePersonnel','setPersonnelPeriod','undoPersonnelPeriod','confirmPersonnel','saveDutyOn']){const action=M[name];M[name]=(...args)=>{const result=action(...args);persistDemoState();return result;};}
+for(const name of ['createRequest','assign','requestCooperation','resolveCooperation','accept','updateTask','close','setCpcon','updatePersonnel','setPersonnelPeriod','undoPersonnelPeriod','confirmPersonnel','saveDutyOn']){const action=M[name];M[name]=(...args)=>{const result=action(...args);persistDemoState();return result;};}

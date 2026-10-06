@@ -1,13 +1,17 @@
 /* Theme surfaces and display layout are separate from normal page geometry. */
 .display-cpcon-5,.display-gps-good{--display-status:#16845c}
 .display-cpcon-4{--display-status:#2676c8}
-.display-cpcon-3,.display-gps-caution{--display-status:#a77508}
+.display-cpcon-3{--display-status:#a77508}
+.display-gps-caution{--display-status:#b85e08}
+.display-gps-spoof{--display-status:#2879df}
 .display-cpcon-2{--display-status:#c55e17}
 .display-cpcon-1,.display-gps-bad{--display-status:#cf3549}
 .display-gps-missing{--display-status:#718096}
 html[data-theme=dark] :is(.display-cpcon-5,.display-gps-good){--display-status:#75dfb4}
 html[data-theme=dark] .display-cpcon-4{--display-status:#85baff}
-html[data-theme=dark] :is(.display-cpcon-3,.display-gps-caution){--display-status:#f4cd67}
+html[data-theme=dark] .display-cpcon-3{--display-status:#f4cd67}
+html[data-theme=dark] .display-gps-caution{--display-status:#ffad70}
+html[data-theme=dark] .display-gps-spoof{--display-status:#85baff}
 html[data-theme=dark] .display-cpcon-2{--display-status:#ffad70}
 html[data-theme=dark] :is(.display-cpcon-1,.display-gps-bad){--display-status:#ff8d9e}
 html[data-theme=dark] .display-gps-missing{--display-status:#b4c0d1}

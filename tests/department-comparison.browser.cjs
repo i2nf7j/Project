@@ -1,9 +1,9 @@
-const {chromium}=require('../.tmp-off-tools/node_modules/playwright');
+const {launchBrowser}=require('./browser.cjs');
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs/promises');
 const {pathToFileURL}=require('node:url');
 
 (async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.TEST_BROWSER_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+  const browser=await launchBrowser();
   try{
     await fs.mkdir('tmp',{recursive:true});
     for(const entry of ['mockup.html','mockup-responsive-motion.html']){
@@ -43,7 +43,7 @@ const {pathToFileURL}=require('node:url');
         assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
         const panel=p.locator('section.card').filter({has:p.locator('.department-comparison')});
         assert.equal(await panel.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);
-        await panel.screenshot({path:'tmp/department-comparison-'+entry.replace('.html','')+'-'+theme+'.png'});
+        await panel.screenshot({path:'tmp/test-results/department-comparison-'+entry.replace('.html','')+'-'+theme+'.png'});
       }
       await p.locator('#demo-role').selectOption('user');assert.equal(await p.locator('.department-comparison').count(),0);
       assert.equal(await p.evaluate(()=>canVisit('statistics')),false);

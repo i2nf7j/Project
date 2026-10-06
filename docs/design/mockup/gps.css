@@ -5,13 +5,11 @@
 .gps-mode .heading{margin-bottom:16px}
 .gps-status{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:600;font-size:14px}
 .gps-status i{width:12px;height:12px;border-radius:50%;background:var(--gps-color);flex-shrink:0}
-.gps-good{--gps-color:#22ae70}.gps-caution{--gps-color:#ffbf0b}.gps-bad{--gps-color:#ec3946}.gps-missing{--gps-color:#8190a5}
-.gps-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
-.gps-summary>.card{display:grid;grid-template-columns:28px auto 1fr;align-items:center;column-gap:16px;margin-top:0;padding:17px 22px;border-radius:10px}
-.gps-summary .gps-status{grid-column:1/-1;gap:18px}
-.gps-summary .gps-status i{width:27px;height:27px;box-shadow:inset 0 0 0 1px #00000005}
-.gps-summary strong{grid-column:2;font-size:34px;line-height:1.3;margin-top:4px}
-.gps-summary small{align-self:end;padding-bottom:4px;font-size:12px;white-space:nowrap}
+.gps-good{--gps-color:#22ae70}.gps-caution{--gps-color:#ed841c}.gps-bad{--gps-color:#ec3946}.gps-missing{--gps-color:#8190a5}.gps-spoof{--gps-color:#2879df}
+.gps-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.gps-summary>.card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;margin-top:0;padding:16px;border-radius:10px}
+.gps-summary strong{font-size:28px;line-height:1.3}
+.gps-summary small{grid-column:1/-1;font-size:12px}
 .gps-mode .gps-filter-card{padding:10px 20px;border-radius:10px}
 .gps-mode #gps-filter{margin:0;gap:12px}
 .gps-mode #gps-filter label{flex-direction:row;align-items:center;gap:14px}
@@ -62,3 +60,32 @@
 
 /* Keep nearby labels separate at the minimum supported PC width. */
 .gps-marker[data-gps-site="gangneung"]{transform:translate(-16px,-100%)}
+.gps-alerts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.gps-alerts .gps-alert{margin-top:0;border-top:4px solid var(--gps-color);padding:18px 20px}
+html[data-theme] .gps-alerts .gps-alert{border-top-color:var(--gps-color)}
+.gps-alert-heading,.gps-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gps-alert-heading h2,.gps-section-heading h2{font-size:16px;margin:0}
+.gps-alert-current{display:flex;align-items:center;gap:10px;font-size:29px;margin:10px 0}
+.gps-alert-current i{width:18px;height:18px;border-radius:50%;background:var(--gps-color)}
+.gps-alert-scale{display:flex;gap:6px;margin-bottom:12px}
+.gps-alert-scale span{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;border:1px solid var(--line);padding:6px;border-radius:6px;font-size:12px}
+.gps-alert-scale i{width:9px;height:9px;background:var(--level-color);border-radius:50%}
+.gps-alert-scale .current{border-color:var(--level-color);background:color-mix(in srgb,var(--level-color) 12%,var(--surface));font-weight:700}
+.gps-alert-note{margin:10px 0 22px;font-size:12px}
+.gps-section-heading{margin-bottom:12px}.gps-section-heading .muted{font-size:12px}
+.gps-placement-line{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gps-placement-line path{fill:none;stroke:#61768a;stroke-width:2;stroke-dasharray:5 5}
+.gps-detector-marker{position:absolute;transform:translate(-50%,-25%);display:flex;align-items:center;gap:3px;padding:3px 6px;background:var(--surface);border:1px solid var(--line);border-radius:6px;font-size:11px;color:var(--ink);white-space:nowrap}
+.gps-detector-marker svg,.gps-detector-status svg{width:28px;height:28px;fill:none;stroke:var(--gps-color);stroke-width:1.6;flex-shrink:0}
+.gps-detector-marker .radar-dot,.gps-detector-status .radar-dot{fill:var(--gps-color)}
+.gps-detector-marker.selected{outline:3px solid color-mix(in srgb,var(--gps-color) 25%,transparent);border-color:var(--gps-color)}
+.gps-detector-status{display:inline-flex;align-items:center;gap:7px;font-size:12px}
+.gps-detector-status svg{width:22px;height:22px}
+.gps-map-footer{display:grid;gap:12px;margin:14px 0 0}.gps-map-footer strong{display:block;font-size:12px;margin-bottom:7px}.gps-map-footer p{margin:0;line-height:1.6}
+.gps-legend{gap:12px}
+.gps-detector-list{display:grid;gap:8px}
+.gps-detector-list button{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:var(--surface);color:var(--ink)}
+.gps-detector-list button.selected{border-color:var(--blue);background:var(--selected)}
+#gps-detector-detail{margin-top:14px;font-size:13px}#gps-detector-detail p{margin-bottom:0}
+html[data-theme=dark] .gps-marker{background:var(--surface);color:var(--ink);border-color:var(--gps-color)}
+@media(max-width:1350px){.gps-layout{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}.gps-marker{padding:4px 6px}.gps-marker .gps-status{font-size:11px;gap:4px}.gps-detector-marker{font-size:10px;gap:2px;padding:2px 4px}.gps-detector-marker svg{width:22px;height:22px}}

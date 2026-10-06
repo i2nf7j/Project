@@ -28,7 +28,7 @@ function displayOperations(){
 }
 function displayMaintenance(){
   if(state.role==='viewer')return V.wings.filter(w=>!viewerFilters.wing||w.id===viewerFilters.wing).map(w=>{const s=V.summarize(w,viewerFilters.start,viewerFilters.end);return '<div class="display-row"><strong>'+esc(w.name)+'</strong><span>완료 '+s.completed+' / 대상 '+s.total+'</span></div>';}).join('');
-  if(state.role==='user')return visibleRequests().filter(r=>!r.closed).map(r=>'<div class="display-row"><span>'+esc(M.title(r))+'</span>'+badge(requestStatus(r))+'</div>').join('')||'<p>미종결 요청 없음</p>';
+  if(state.role==='user')return visibleRequests().filter(r=>!r.closed&&!r.cancelled).map(r=>'<div class="display-row"><span>'+esc(M.title(r))+'</span>'+badge(requestStatus(r))+'</div>').join('')||'<p>미종결 요청 없음</p>';
   return visibleTasks().filter(t=>!t.completed).map(t=>'<div class="display-row"><div><strong>'+esc(M.title(requestOf(t)))+'</strong><small>'+esc(M.departmentName(t.department))+'</small></div>'+badge(taskStatus(t))+'</div>').join('')||'<p>미완료 작업 없음</p>';
 }
 function displayDuty(){
@@ -39,7 +39,7 @@ function displayInstructions(){return instructionMainPositions.map(position=>{co
 function displayDashboard(){
   const viewer=state.role==='viewer',sections=[['overview','종합'],['operations','운영현황'],['maintenance','정비현황'],...(!viewer?[['duty','근무자']]:[])];
   if(!sections.some(([id])=>id===displaySection))displaySection='overview';
-  const counts=viewer?V.wings.filter(w=>!viewerFilters.wing||w.id===viewerFilters.wing).reduce((s,w)=>{const x=V.summarize(w,viewerFilters.start,viewerFilters.end);s.total+=x.total;s.pending+=x.pending;return s;},{total:0,pending:0}):{total:visibleRequests().filter(r=>!r.closed).length,pending:state.role==='user'?visibleRequests().filter(r=>!r.primary).length:visibleTasks().filter(t=>!t.completed).length};
+  const counts=viewer?V.wings.filter(w=>!viewerFilters.wing||w.id===viewerFilters.wing).reduce((s,w)=>{const x=V.summarize(w,viewerFilters.start,viewerFilters.end);s.total+=x.total;s.pending+=x.pending;return s;},{total:0,pending:0}):{total:visibleRequests().filter(r=>!r.closed&&!r.cancelled).length,pending:state.role==='user'?visibleRequests().filter(r=>!r.primary&&!r.cancelled&&!r.closed).length:visibleTasks().filter(t=>!t.completed).length};
   const level=M.levels.find(l=>l.value===state.cpcon.level),site=G.forWing(M.sessions[state.role].wing);
   const metrics=viewer?[['조회 비행단',V.wings.filter(w=>!viewerFilters.wing||w.id===viewerFilters.wing).length],['관리대상',counts.total],['미완료',counts.pending],['기준일',V.asOf]]:[['미종결 요청',counts.total],[state.role==='user'?'배정 대기':'미완료 작업',counts.pending],['CPCON',level.roman+' · '+level.name],['GPS',site?G.statuses[site.status].label:'미설정']];
   const content=displaySection==='overview'?displayCard('체계별 운영상태',displayOperations())+displayCard(viewer?'비행단 정비 집계':'진행 정비 · 조회 허용 범위',displayMaintenance())+displayCard(viewer?'자료 기준':'근무자(야간)',viewer?'<p>제17비행단은 BNOC 연동 · 다른 비행단은 예시</p><p>정비 '+esc(viewerFilters.start)+' ~ '+esc(viewerFilters.end)+'</p><p>운영 '+esc(V.asOf)+' 14:00</p>':displayDuty())+displayCard('지시사항',displayInstructions()):displayCard(sections.find(([id])=>id===displaySection)[1],displaySection==='operations'?displayOperations():displaySection==='maintenance'?displayMaintenance():displayDuty());

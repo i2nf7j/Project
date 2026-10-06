@@ -1,8 +1,10 @@
-const {chromium}=require('playwright'),assert=require('node:assert/strict'),path=require('node:path'),{pathToFileURL}=require('node:url');
-(async()=>{const browser=await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL||undefined});try{
+const {launchBrowser}=require('./browser.cjs'),assert=require('node:assert/strict'),path=require('node:path'),{pathToFileURL}=require('node:url');
+(async()=>{const browser=await launchBrowser();try{
  const page=await browser.newPage({viewport:{width:1512,height:1100}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));await page.route('https://api.open-meteo.com/**',r=>r.abort());
  await page.goto(pathToFileURL(path.resolve('docs/design/mockup.html')).href);
+ // The initial roster starts on September 16; explicitly seed a preceding roster to copy.
+ await page.evaluate(()=>{const roster=structuredClone(M.dutyOn(state,M.today));M.saveDutyOn(state,'2026-09-14',{...roster,start:'2026-09-14T18:00',end:'2026-09-15T09:00'});});
  await page.locator('nav [data-page=duty]').click();await page.locator('#staffing-date').fill('2026-09-15');
  await page.locator('[data-edit-duty]').click();await page.locator('[data-copy-duty]').click();
  await page.locator('[data-roster-select="D-DEMO-1"]').selectOption('P-DEMO-1');
@@ -13,7 +15,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),path
  assert.match(await page.locator('[data-person-id="P-DEMO-2"]').textContent(),/야간 후 자동 오프/);
  await page.reload();await page.locator('nav [data-page=personnel]').click();
  assert.match(await page.locator('[data-person-id="P-DEMO-2"]').textContent(),/야간 후 자동 오프/);
- await page.screenshot({path:'docs/design/mockup/preview-auto-off.png',fullPage:true});
+ await page.screenshot({path:'tmp/test-results/off-duty-preview-auto-off.png',fullPage:true});
  await page.locator('[data-confirm-personnel]').click();
  await page.locator('nav [data-page=duty]').click();await page.locator('#staffing-date').fill('2026-09-15');await page.locator('[data-edit-duty]').click();
  assert.equal(await page.locator('[name="kind-D-DEMO-2"]').inputValue(),'야간');

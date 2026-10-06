@@ -62,7 +62,9 @@
     need(validTime(data.start)&&validTime(data.end)&&data.start<data.end,'정비 종료는 시작 시각보다 늦어야 합니다.');
     need(impacts.includes(data.impact)&&['예정','완료','취소'].includes(data.status),'예상 영향과 일정 상태를 확인하세요.');
     need(data.scope?.trim(),'영향받는 서비스·구역을 입력하세요.');
-    const p={id:id||'plan-'+crypto.randomUUID(),target:data.target,title:data.title.trim(),start:data.start,end:data.end,impact:data.impact,scope:data.scope.trim(),note:(data.note||'').trim(),status:data.status};
+    const completionNote=data.completionNote??existing?.completionNote??'';
+    need(data.status!=='완료'||typeof completionNote==='string'&&completionNote.trim(),'완료 시 조치 결과를 입력하세요.');
+    const p={id:id||'plan-'+crypto.randomUUID(),target:data.target,title:data.title.trim(),start:data.start,end:data.end,impact:data.impact,scope:data.scope.trim(),note:(data.note||'').trim(),status:data.status,completionNote:typeof completionNote==='string'?completionNote.trim():''};
     if(existing)Object.assign(existing,p);else store.plans.push(p);return p;
   };
   const canMove=(s,id,parentId)=>{
